@@ -63,7 +63,7 @@ function checkAnswer(selected) {
 
     if (currentQuestion < questions.length) {
         if (questionCounter % 3 === 0 && questionCounter !== 0) {
-            showRewardedAd(); // Wyświetlamy reklamę co 3 pytania
+            showInAppInterstitialAd(); // Wyświetlamy reklamę co 3 pytania
         }
         loadQuestion();
     } else {
@@ -84,15 +84,15 @@ function endQuiz() {
 // Inicjalizacja
 startQuiz();
 
-function showRewardedAd() {
-    show_9058300().then(() => {
-        // Nagradzanie użytkownika za obejrzenie reklamy
-        score++;
-        scoreElement.textContent = `Wynik: ${score}/${questions.length}`;
-        alert('Otrzymałeś punkt za obejrzenie reklamy!');
-    }).catch(e => {
-        // Obsługa błędów, jeśli reklama nie została wyświetlona
-        console.error('Błąd wyświetlania reklamy:', e);
-        alert('Wystąpił błąd podczas wyświetlania reklamy.');
+function showInAppInterstitialAd() {
+    show_9058300({
+        type: 'inApp',
+        inAppSettings: {
+            frequency: 1, // Wyświetlamy tylko jedną reklamę
+            capping: 1, // W ciągu jednej godziny
+            interval: 0, // Bez odstępu czasowego
+            timeout: 5, // 5 sekund opóźnienia
+            everyPage: false // Sesja nie jest resetowana przy przejściu między stronami
+        }
     });
 }
