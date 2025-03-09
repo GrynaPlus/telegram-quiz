@@ -80,14 +80,23 @@ function checkAnswer(selectedAnswer) {
             endQuiz();
         }
     } else {
+        showAdOption();
+    }
+}
+
+function showAdOption() {
+    const watchAd = confirm("Zła odpowiedź! Chcesz obejrzeć reklamę, aby nie utracić postępu?");
+    if (watchAd) {
         showRewardedAd();
+    } else {
+        resetProgress();
     }
 }
 
 function showRewardedAd() {
     if (typeof show_9058300 === "function") {
         show_9058300().then(() => {
-            alert('Otrzymałeś drugą szansę!');
+            alert('Reklama obejrzana. Możesz kontynuować!');
             loadQuestion();
         }).catch(() => {
             alert('Nie obejrzano reklamy. Postęp został zresetowany.');
