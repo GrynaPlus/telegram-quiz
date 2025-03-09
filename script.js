@@ -148,7 +148,7 @@ function showRewardAdOption() {
 
 // Obsługa reklamy nagradzanej (zachowanie postępu)
 function showRewardAd() {
-    show_9058300('pop').then(() => {
+    show_9058300('rewardedads').then(() => {
         alert("Reklama obejrzana – kontynuujesz quiz!");
         loadQuestion();
     }).catch(() => {
@@ -159,9 +159,10 @@ function showRewardAd() {
 
 // Obsługa reklamy nagradzanej (pominięcie poziomu)
 function showSkipAd() {
-    show_9058300('pop').then(() => {
+    show_9058300('rewardedads').then(() => {
         alert("Poziom pominięty!");
         currentQuestion++;
+        localStorage.setItem('currentQuestion', currentQuestion); // Dodano zapis postępu
         loadQuestion();
     }).catch(() => {
         alert("Nie udało się załadować reklamy.");
