@@ -40,21 +40,27 @@ function loadQuestion() {
 function generateDots(totalDots, redDots) {
     answersContainer.innerHTML = "";
 
-    // Generowanie czerwonych kropek
-    for (let i = 0; i < redDots; i++) {
-        const redDot = document.createElement("div");
-        redDot.classList.add("dot", "red");
-        positionDotRandomly(redDot);
-        answersContainer.appendChild(redDot);
+    // Tworzymy tablicę kropek
+    const dots = [];
+    
+    // Wypełniamy tablicę naprzemiennie czerwonymi i czarnymi kropkami
+    for (let i = 0; i < totalDots; i++) {
+        if (i < redDots) {
+            dots.push('red'); // Czerwone kropki
+        } else {
+            dots.push('black'); // Czarnie kropki
+        }
     }
 
-    // Generowanie czarnych kropek
-    for (let i = 0; i < totalDots - redDots; i++) {
-        const blackDot = document.createElement("div");
-        blackDot.classList.add("dot");
-        positionDotRandomly(blackDot);
-        answersContainer.appendChild(blackDot);
-    }
+    // Tasujemy tablicę z kropkami, aby były rozmieszczone losowo
+    shuffleArray(dots);
+
+    // Generowanie kropek w oparciu o tasowaną tablicę
+    dots.forEach(dotColor => {
+        const dot = document.createElement("div");
+        dot.classList.add("dot", dotColor);
+        answersContainer.appendChild(dot);
+    });
 
     const options = generateOptions(redDots);
     options.forEach(option => {
@@ -155,19 +161,6 @@ function showInAppInterstitialAd() {
             everyPage: false
         }
     });
-}
-
-function positionDotRandomly(dot) {
-    const containerWidth = answersContainer.offsetWidth;
-    const containerHeight = answersContainer.offsetHeight;
-    
-    // Losowe położenie w obrębie szerokości i wysokości kontenera
-    const randomX = Math.random() * (containerWidth - 20); // 20px to przybliżony rozmiar kropki
-    const randomY = Math.random() * (containerHeight - 20); // 20px to przybliżony rozmiar kropki
-    
-    dot.style.position = "absolute";
-    dot.style.left = `${randomX}px`;
-    dot.style.top = `${randomY}px`;
 }
 
 startQuiz();
