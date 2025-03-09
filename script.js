@@ -29,11 +29,15 @@ let score = 0;
 let questionCounter = 0;
 let consecutiveCorrectAnswers = 0;
 let correctAnswer;
-let lastAdTime = 0; // Czas ostatniej reklamy
+let lastAdTime = 0;
 
 const answersContainer = document.getElementById("answers");
 const restartButton = document.getElementById("restart-btn");
 const scoreElement = document.getElementById("score");
+const answerInput = document.getElementById("answer-input");
+const submitButton = document.getElementById("submit-btn");
+
+submitButton.addEventListener("click", () => checkAnswer());
 
 function startQuiz() {
     currentQuestion = 0;
@@ -53,6 +57,7 @@ function loadQuestion() {
     correctAnswer = currentQuiz[color + "Dots"];
     answersContainer.innerHTML = `<div id="question-text">Policz kropki koloru ${color}:</div>`;
     generateDots(totalDots, correctAnswer, color);
+    answerInput.value = "";
 }
 
 function generateDots(totalDots, correctAnswer, color) {
@@ -66,24 +71,12 @@ function generateDots(totalDots, correctAnswer, color) {
         }
         answersContainer.appendChild(dot);
     }
-
-    const options = generateOptions(correctAnswer);
-    options.forEach(option => {
-        const button = document.createElement("button");
-        button.textContent = option;
-        button.addEventListener("click", () => checkAnswer(option));
-        answersContainer.appendChild(button);
-    });
 }
 
-function generateOptions(correctAnswer) {
-    const options = [correctAnswer, correctAnswer + 2, correctAnswer - 1, correctAnswer + 3];
-    shuffleArray(options);
-    return options;
-}
+function checkAnswer() {
+    const userAnswer = parseInt(answerInput.value);
 
-function checkAnswer(selectedAnswer) {
-    if (selectedAnswer === correctAnswer) {
+    if (userAnswer === correctAnswer) {
         score++;
         consecutiveCorrectAnswers++;
         if (consecutiveCorrectAnswers === 2) {
@@ -141,4 +134,7 @@ function showSkipLevelAd() {
 function showRewardedAd(callback) {
     const currentTime = Date.now();
     if (currentTime - lastAdTime < 30000) { // 30 sekund odstępu
-        setTimeout(() => showRewardedAd(callback), 30000 - (currentTime - last
+        setTimeout(() => showRewardedAd(callback), 30000 - (currentTime - lastAdTime));
+    } else {
+        lastAdTime = currentTime;
+        show_9
