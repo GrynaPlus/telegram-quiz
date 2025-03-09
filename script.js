@@ -2,13 +2,13 @@ const tg = window.Telegram.WebApp;
 tg.expand();
 
 const quizData = Array.from({ length: 100 }, (_, i) => ({
-    totalDots: 30 + i * 2, // Liczba kropek rośnie
-    redDots: Math.floor((30 + i * 2) * 0.4) // 40% kropek to czerwone
+    totalDots: 30 + i * 2,
+    redDots: Math.floor((30 + i * 2) * 0.4)
 }));
 
-let currentQuestion = 0;
-let score = 0;
-let questionCounter = 0;
+let currentQuestion = parseInt(localStorage.getItem('currentQuestion')) || 0;
+let score = parseInt(localStorage.getItem('score')) || 0;
+let questionCounter = currentQuestion;
 
 const answersContainer = document.getElementById("answers");
 const restartButton = document.getElementById("restart-btn");
@@ -18,6 +18,8 @@ function startQuiz() {
     currentQuestion = 0;
     score = 0;
     questionCounter = 0;
+    localStorage.setItem('currentQuestion', 0);
+    localStorage.setItem('score', 0);
     restartButton.style.display = "none";
     loadQuestion();
 }
@@ -27,6 +29,7 @@ function loadQuestion() {
     const currentQuiz = quizData[currentQuestion];
     const { totalDots, redDots } = currentQuiz;
     generateDots(totalDots, redDots);
+    scoreElement.textContent = `Wynik: ${score}/100`;
 }
 
 function generateDots(totalDots, redDots) {
@@ -73,7 +76,10 @@ function checkAnswer(selectedAnswer) {
         score++;
         currentQuestion++;
         questionCounter++;
-        scoreElement.textContent = `Wynik: ${score}/100`;
+        
+        // Zapisz postęp w LocalStorage
+        localStorage.setItem('currentQuestion', currentQuestion);
+        localStorage.setItem('score', score);
 
         if (currentQuestion === 100) {
             showFinalMessage();
@@ -95,6 +101,8 @@ function showFinalMessage() {
     answersContainer.innerHTML = `<h2>Gratulacje Wariacie 420!</h2>`;
     restartButton.style.display = "block";
     tg.sendData(JSON.stringify({ score: score }));
+    localStorage.removeItem('currentQuestion');
+    localStorage.removeItem('score');
 }
 
 function showRewardAdOption() {
@@ -157,4 +165,10 @@ function shuffleArray(array) {
     }
 }
 
-startQuiz();
+// Sprawdź, czy są zapisane dane i załaduj je
+if (currentQuestion > 0) {
+    alert(`Wznawiasz grę od poziomu ${currentQuestion + 1}`);
+    loadQuestion();
+} else {
+    startQuiz();
+}
