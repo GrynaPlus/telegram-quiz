@@ -36,6 +36,7 @@ const restartButton = document.getElementById("restart-btn");
 const scoreElement = document.getElementById("score");
 const answerInput = document.getElementById("answer-input");
 const submitButton = document.getElementById("submit-btn");
+const questionText = document.getElementById("question-text");
 
 submitButton.addEventListener("click", () => checkAnswer());
 
@@ -55,7 +56,7 @@ function loadQuestion() {
     const color = currentQuiz.colors[0];
 
     correctAnswer = currentQuiz[color + "Dots"];
-    answersContainer.innerHTML = `<div id="question-text">Policz kropki koloru ${color}:</div>`;
+    questionText.textContent = `Policz kropki koloru ${color}:`;
     generateDots(totalDots, correctAnswer, color);
     answerInput.value = "";
 }
@@ -134,7 +135,4 @@ function showSkipLevelAd() {
 function showRewardedAd(callback) {
     const currentTime = Date.now();
     if (currentTime - lastAdTime < 30000) { // 30 sekund odstępu
-        setTimeout(() => showRewardedAd(callback), 30000 - (currentTime - lastAdTime));
-    } else {
-        lastAdTime = currentTime;
-        show_9
+        setTimeout(() => showRewarded
