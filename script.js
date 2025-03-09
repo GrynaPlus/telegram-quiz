@@ -1,6 +1,5 @@
-// Sprawdzenie dostępności Telegram WebApp
-const tg = window.Telegram?.WebApp;
-if (tg) tg.expand();
+const tg = window.Telegram.WebApp;
+tg.expand();
 
 const quizData = [
     { totalDots: 40, redDots: 15 },
@@ -33,18 +32,26 @@ function startQuiz() {
 
 function loadQuestion() {
     answersContainer.innerHTML = "";
-    const { totalDots, redDots } = quizData[currentQuestion];
+    const currentQuiz = quizData[currentQuestion];
+    const { totalDots, redDots } = currentQuiz;
     generateDots(totalDots, redDots);
 }
 
 function generateDots(totalDots, redDots) {
-    for (let i = 0; i < totalDots; i++) {
-        const dot = document.createElement("div");
-        dot.classList.add("dot");
-        if (Math.random() < redDots / totalDots) {
-            dot.classList.add("red");
-        }
-        answersContainer.appendChild(dot);
+    answersContainer.innerHTML = "";
+
+    // Generowanie czerwonych kropek
+    for (let i = 0; i < redDots; i++) {
+        const redDot = document.createElement("div");
+        redDot.classList.add("dot", "red");
+        answersContainer.appendChild(redDot);
+    }
+
+    // Generowanie czarnych kropek
+    for (let i = 0; i < totalDots - redDots; i++) {
+        const blackDot = document.createElement("div");
+        blackDot.classList.add("dot");
+        answersContainer.appendChild(blackDot);
     }
 
     const options = generateOptions(redDots);
@@ -57,16 +64,13 @@ function generateDots(totalDots, redDots) {
 }
 
 function generateOptions(correctAnswer) {
-    const options = new Set();
-    options.add(correctAnswer);
-    while (options.size < 4) {
-        options.add(correctAnswer + Math.floor(Math.random() * 5) - 2);
-    }
-    return Array.from(options).sort(() => Math.random() - 0.5);
+    const options = [correctAnswer, correctAnswer + 2, correctAnswer - 1, correctAnswer + 3];
+    shuffleArray(options);
+    return options;
 }
 
 function checkAnswer(selectedAnswer) {
-    if (parseInt(selectedAnswer) === quizData[currentQuestion].redDots) {
+    if (selectedAnswer === quizData[currentQuestion].redDots) {
         score++;
         currentQuestion++;
         questionCounter++;
@@ -75,67 +79,80 @@ function checkAnswer(selectedAnswer) {
         if (score === 10) {
             showBonusCode();
         } else if (currentQuestion < quizData.length) {
+            if (questionCounter % 3 === 0) {
+                showInAppInterstitialAd();
+            }
             loadQuestion();
         } else {
             endQuiz();
         }
     } else {
-        showAdOption();
+        showRewardAdOption();
     }
-}
-
-function showAdOption() {
-    const watchAd = confirm("Zła odpowiedź! Chcesz obejrzeć reklamę, aby nie utracić postępu?");
-    if (watchAd) {
-        showRewardedAd();
-    } else {
-        resetProgress();
-    }
-}
-
-function showRewardedAd() {
-    if (typeof show_9058300 === "function") {
-        show_9058300().then(() => {
-            alert('Reklama obejrzana. Możesz kontynuować!');
-            loadQuestion();
-        }).catch(() => {
-            alert('Nie obejrzano reklamy. Postęp został zresetowany.');
-            resetProgress();
-        });
-    } else {
-        alert('Reklama niedostępna. Postęp został zresetowany.');
-        resetProgress();
-    }
-}
-
-function resetProgress() {
-    currentQuestion = 0;
-    score = 0;
-    questionCounter = 0;
-    scoreElement.textContent = `Wynik: ${score}/10`;
-    loadQuestion();
 }
 
 function showBonusCode() {
-    answersContainer.innerHTML = `
-        <h2>Gratulacje! Zdobyłeś 10/10 punktów!</h2>
-        <p>Twój kod bonusowy: <strong>kropki</strong></p>
-    `;
+    answersContainer.innerHTML = `<h2>Gratulacje! Oto Twój kod bonusowy: <strong>kropki</strong></h2>`;
     restartButton.style.display = "block";
+    tg.sendData(JSON.stringify({ score: score, bonus: "kropki" }));
+}
 
-    if (tg) {
-        tg.sendData(JSON.stringify({ bonusCode: "kropki" }));
-    }
+function showRewardAdOption() {
+    const message = document.createElement("p");
+    message.innerHTML = "Źle! Chcesz obejrzeć reklamę, aby zachować postęp?";
+
+    const yesButton = document.createElement("button");
+    yesButton.textContent = "Tak, obejrzyj reklamę";
+    yesButton.addEventListener("click", () => {
+        showRewardAd();
+    });
+
+    const noButton = document.createElement("button");
+    noButton.textContent = "Nie, zacznij od nowa";
+    noButton.addEventListener("click", () => {
+        startQuiz();
+    });
+
+    answersContainer.innerHTML = "";
+    answersContainer.appendChild(message);
+    answersContainer.appendChild(yesButton);
+    answersContainer.appendChild(noButton);
+}
+
+function showRewardAd() {
+    show_9058300().then(() => {
+        alert("Reklama obejrzana – kontynuujesz quiz!");
+        loadQuestion();
+    }).catch(() => {
+        alert("Nie udało się załadować reklamy – zaczynasz od nowa.");
+        startQuiz();
+    });
 }
 
 function endQuiz() {
     answersContainer.innerHTML = `Koniec! Twój wynik: ${score}/10`;
     restartButton.style.display = "block";
+    tg.sendData(JSON.stringify({ score: score }));
+}
 
-    if (tg) {
-        tg.sendData(JSON.stringify({ score: score }));
+function shuffleArray(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
     }
 }
 
-// Rozpoczęcie quizu
+function showInAppInterstitialAd() {
+    show_9058300({
+        type: 'inApp',
+        inAppSettings: {
+            frequency: 2,
+            capping: 0.1,
+            interval: 30,
+            timeout: 5,
+            everyPage: false
+        }
+    });
+}
+
 startQuiz();
