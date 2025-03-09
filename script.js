@@ -44,6 +44,7 @@ function generateDots(totalDots, redDots) {
     for (let i = 0; i < redDots; i++) {
         const redDot = document.createElement("div");
         redDot.classList.add("dot", "red");
+        positionDotRandomly(redDot);
         answersContainer.appendChild(redDot);
     }
 
@@ -51,6 +52,7 @@ function generateDots(totalDots, redDots) {
     for (let i = 0; i < totalDots - redDots; i++) {
         const blackDot = document.createElement("div");
         blackDot.classList.add("dot");
+        positionDotRandomly(blackDot);
         answersContainer.appendChild(blackDot);
     }
 
@@ -153,6 +155,19 @@ function showInAppInterstitialAd() {
             everyPage: false
         }
     });
+}
+
+function positionDotRandomly(dot) {
+    const containerWidth = answersContainer.offsetWidth;
+    const containerHeight = answersContainer.offsetHeight;
+    
+    // Losowe położenie w obrębie szerokości i wysokości kontenera
+    const randomX = Math.random() * (containerWidth - 20); // 20px to przybliżony rozmiar kropki
+    const randomY = Math.random() * (containerHeight - 20); // 20px to przybliżony rozmiar kropki
+    
+    dot.style.position = "absolute";
+    dot.style.left = `${randomX}px`;
+    dot.style.top = `${randomY}px`;
 }
 
 startQuiz();
