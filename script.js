@@ -29,6 +29,7 @@ let score = 0;
 let questionCounter = 0;
 let consecutiveCorrectAnswers = 0;
 let correctAnswer;
+let lastAdTime = 0; // Czas ostatniej reklamy
 
 const answersContainer = document.getElementById("answers");
 const restartButton = document.getElementById("restart-btn");
@@ -50,6 +51,7 @@ function loadQuestion() {
     const color = currentQuiz.colors[0];
 
     correctAnswer = currentQuiz[color + "Dots"];
+    answersContainer.innerHTML = `<div id="question-text">Policz kropki koloru ${color}:</div>`;
     generateDots(totalDots, correctAnswer, color);
 }
 
@@ -89,6 +91,7 @@ function checkAnswer(selectedAnswer) {
         }
     } else {
         consecutiveCorrectAnswers = 0;
+        score = 0;
         showRetryAd();
         return;
     }
@@ -136,24 +139,6 @@ function showSkipLevelAd() {
 }
 
 function showRewardedAd(callback) {
-    show_9058300().then(() => {
-        callback();
-    }).catch(() => {
-        alert("Błąd wyświetlania reklamy.");
-    });
-}
-
-function showInAppInterstitialAd() {
-    show_9058300({
-        type: 'inApp',
-        inAppSettings: {
-            frequency: 2,
-            capping: 0.1,
-            interval: 30,
-            timeout: 5,
-            everyPage: false
-        }
-    });
-}
-
-startQuiz();
+    const currentTime = Date.now();
+    if (currentTime - lastAdTime < 30000) { // 30 sekund odstępu
+        setTimeout(() => showRewardedAd(callback), 30000 - (currentTime - last
