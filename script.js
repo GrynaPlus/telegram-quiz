@@ -1,22 +1,15 @@
 const tg = window.Telegram.WebApp;
 tg.expand();
 
-const quizData = [
-    { totalDots: 40, redDots: 15 },
-    { totalDots: 50, redDots: 20 },
-    { totalDots: 60, redDots: 25 },
-    { totalDots: 35, redDots: 12 },
-    { totalDots: 45, redDots: 18 },
-    { totalDots: 55, redDots: 22 },
-    { totalDots: 30, redDots: 10 },
-    { totalDots: 42, redDots: 16 },
-    { totalDots: 52, redDots: 21 },
-    { totalDots: 38, redDots: 14 }
-];
+// Generowanie 100 poziomów z rosnącą liczbą kropek
+const quizData = Array.from({ length: 100 }, (_, i) => {
+    const totalDots = 40 + i * 2; // Liczba kropek rośnie o 2 na poziom
+    const redDots = Math.floor(totalDots * 0.4); // Około 40% kropek czerwonych
+    return { totalDots, redDots };
+});
 
 let currentQuestion = 0;
 let score = 0;
-let questionCounter = 0;
 
 const answersContainer = document.getElementById("answers");
 const restartButton = document.getElementById("restart-btn");
@@ -25,7 +18,6 @@ const scoreElement = document.getElementById("score");
 function startQuiz() {
     currentQuestion = 0;
     score = 0;
-    questionCounter = 0;
     restartButton.style.display = "none";
     loadQuestion();
 }
@@ -40,22 +32,12 @@ function loadQuestion() {
 function generateDots(totalDots, redDots) {
     answersContainer.innerHTML = "";
 
-    // Tworzymy tablicę kropek
-    const dots = [];
-    
-    // Wypełniamy tablicę naprzemiennie czerwonymi i czarnymi kropkami
-    for (let i = 0; i < totalDots; i++) {
-        if (i < redDots) {
-            dots.push('red'); // Czerwone kropki
-        } else {
-            dots.push('black'); // Czarnie kropki
-        }
-    }
+    // Tworzenie tablicy kropek (naprzemiennie czerwone i czarne)
+    const dots = Array.from({ length: totalDots }, (_, i) => (i < redDots ? 'red' : 'black'));
 
-    // Tasujemy tablicę z kropkami, aby były rozmieszczone losowo
+    // Tasowanie tablicy, by kropki były rozmieszczone losowo
     shuffleArray(dots);
 
-    // Generowanie kropek w oparciu o tasowaną tablicę
     dots.forEach(dotColor => {
         const dot = document.createElement("div");
         dot.classList.add("dot", dotColor);
@@ -81,33 +63,30 @@ function checkAnswer(selectedAnswer) {
     if (selectedAnswer === quizData[currentQuestion].redDots) {
         score++;
         currentQuestion++;
-        questionCounter++;
-        scoreElement.textContent = `Wynik: ${score}/10`;
+        scoreElement.textContent = `Wynik: ${score}/100`;
 
-        if (score === 10) {
-            showBonusCode();
-        } else if (currentQuestion < quizData.length) {
-            if (questionCounter % 3 === 0) {
+        if (currentQuestion < quizData.length) {
+            if (currentQuestion % 3 === 0) {
                 showInAppInterstitialAd();
             }
             loadQuestion();
         } else {
-            endQuiz();
+            showFinalMessage();
         }
     } else {
         showRewardAdOption();
     }
 }
 
-function showBonusCode() {
-    answersContainer.innerHTML = `<h2>Gratulacje! Oto Twój kod bonusowy: <strong>kropki</strong></h2>`;
+function showFinalMessage() {
+    answersContainer.innerHTML = `<h2>Gratulacje Wariacie 420 🎉</h2>`;
     restartButton.style.display = "block";
-    tg.sendData(JSON.stringify({ score: score, bonus: "kropki" }));
+    tg.sendData(JSON.stringify({ score: score }));
 }
 
 function showRewardAdOption() {
     const message = document.createElement("p");
-    message.innerHTML = "Źle! Chcesz obejrzeć reklamę, aby zachować postęp?";
+    message.innerHTML = "Źle! Chcesz obejrzeć reklamę, aby kontynuować?";
 
     const yesButton = document.createElement("button");
     yesButton.textContent = "Tak, obejrzyj reklamę";
@@ -135,12 +114,6 @@ function showRewardAd() {
         alert("Nie udało się załadować reklamy – zaczynasz od nowa.");
         startQuiz();
     });
-}
-
-function endQuiz() {
-    answersContainer.innerHTML = `Koniec! Twój wynik: ${score}/10`;
-    restartButton.style.display = "block";
-    tg.sendData(JSON.stringify({ score: score }));
 }
 
 function shuffleArray(array) {
