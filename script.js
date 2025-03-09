@@ -11,10 +11,16 @@ const questions = [
     { question: "Największy ocean to…", answers: ["Atlantycki", "Spokojny", "Indyjski"], correct: "Spokojny" },
     { question: "Ile to 5 x 5?", answers: ["20", "25", "30"], correct: "25" },
     { question: "Ile dni ma tydzień?", answers: ["5", "6", "7"], correct: "7" },
+    { question: "Który to kolor tęczy?", answers: ["Żółty", "Czarny", "Srebrny"], correct: "Żółty" },
+    { question: "Kto odkrył Amerykę?", answers: ["Kopernik", "Kolumb", "Newton"], correct: "Kolumb" },
+    { question: "Ile to 10 - 3?", answers: ["5", "7", "9"], correct: "7" },
+    { question: "Największy kontynent to…", answers: ["Europa", "Azja", "Afryka"], correct: "Azja" },
+    { question: "Jaki gaz jest niezbędny do oddychania?", answers: ["Azot", "Tlen", "Dwutlenek węgla"], correct: "Tlen" },
 ];
 
 let currentQuestion = 0;
 let score = 0;
+let questionCounter = 0; // Dodajemy licznik pytań
 
 // Elementy DOM
 const questionElement = document.getElementById("question");
@@ -26,6 +32,7 @@ const scoreElement = document.getElementById("score");
 function startQuiz() {
     currentQuestion = 0;
     score = 0;
+    questionCounter = 0; // Resetujemy licznik pytań
     restartButton.style.display = "none";
     loadQuestion();
 }
@@ -50,9 +57,14 @@ function checkAnswer(selected) {
     if (selected === correct) score++;
 
     currentQuestion++;
+    questionCounter++; // Zwiększamy licznik pytań
+
     scoreElement.textContent = `Wynik: ${score}/${questions.length}`;
 
     if (currentQuestion < questions.length) {
+        if (questionCounter % 3 === 0 && questionCounter !== 0) {
+            showRewardedAd(); // Wyświetlamy reklamę co 3 pytania
+        }
         loadQuestion();
     } else {
         endQuiz();
