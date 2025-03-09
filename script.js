@@ -1,15 +1,14 @@
 const tg = window.Telegram.WebApp;
 tg.expand();
 
-// Generowanie 100 poziomów z rosnącą liczbą kropek
-const quizData = Array.from({ length: 100 }, (_, i) => {
-    const totalDots = 40 + i * 2; // Liczba kropek rośnie o 2 na poziom
-    const redDots = Math.floor(totalDots * 0.4); // Około 40% kropek czerwonych
-    return { totalDots, redDots };
-});
+const quizData = Array.from({ length: 100 }, (_, i) => ({
+    totalDots: 30 + i * 2, // Liczba kropek rośnie
+    redDots: Math.floor((30 + i * 2) * 0.4) // 40% kropek to czerwone
+}));
 
 let currentQuestion = 0;
 let score = 0;
+let questionCounter = 0;
 
 const answersContainer = document.getElementById("answers");
 const restartButton = document.getElementById("restart-btn");
@@ -18,6 +17,7 @@ const scoreElement = document.getElementById("score");
 function startQuiz() {
     currentQuestion = 0;
     score = 0;
+    questionCounter = 0;
     restartButton.style.display = "none";
     loadQuestion();
 }
@@ -31,18 +31,27 @@ function loadQuestion() {
 
 function generateDots(totalDots, redDots) {
     answersContainer.innerHTML = "";
+    const dots = [];
 
-    // Tworzenie tablicy kropek (naprzemiennie czerwone i czarne)
-    const dots = Array.from({ length: totalDots }, (_, i) => (i < redDots ? 'red' : 'black'));
+    let redCount = 0;
+    let blackCount = 0;
 
-    // Tasowanie tablicy, by kropki były rozmieszczone losowo
-    shuffleArray(dots);
-
-    dots.forEach(dotColor => {
+    for (let i = 0; i < totalDots; i++) {
         const dot = document.createElement("div");
-        dot.classList.add("dot", dotColor);
-        answersContainer.appendChild(dot);
-    });
+        dot.classList.add("dot");
+
+        if ((blackCount + 1) % 3 === 0 && redCount < redDots) {
+            dot.classList.add("red");
+            redCount++;
+        } else {
+            blackCount++;
+        }
+
+        dots.push(dot);
+    }
+
+    shuffleArray(dots);
+    dots.forEach(dot => answersContainer.appendChild(dot));
 
     const options = generateOptions(redDots);
     options.forEach(option => {
@@ -63,15 +72,19 @@ function checkAnswer(selectedAnswer) {
     if (selectedAnswer === quizData[currentQuestion].redDots) {
         score++;
         currentQuestion++;
+        questionCounter++;
         scoreElement.textContent = `Wynik: ${score}/100`;
 
-        if (currentQuestion < quizData.length) {
-            if (currentQuestion % 3 === 0) {
-                showInAppInterstitialAd();
+        if (currentQuestion === 100) {
+            showFinalMessage();
+        } else {
+            if (questionCounter % 5 === 0) {
+                showInterstitialAd();
+            }
+            if (questionCounter % 7 === 0) {
+                showPopupAd();
             }
             loadQuestion();
-        } else {
-            showFinalMessage();
         }
     } else {
         showRewardAdOption();
@@ -79,14 +92,14 @@ function checkAnswer(selectedAnswer) {
 }
 
 function showFinalMessage() {
-    answersContainer.innerHTML = `<h2>Gratulacje Wariacie 420 🎉</h2>`;
+    answersContainer.innerHTML = `<h2>Gratulacje Wariacie 420!</h2>`;
     restartButton.style.display = "block";
     tg.sendData(JSON.stringify({ score: score }));
 }
 
 function showRewardAdOption() {
     const message = document.createElement("p");
-    message.innerHTML = "Źle! Chcesz obejrzeć reklamę, aby kontynuować?";
+    message.innerHTML = "Źle! Chcesz obejrzeć reklamę, aby zachować postęp?";
 
     const yesButton = document.createElement("button");
     yesButton.textContent = "Tak, obejrzyj reklamę";
@@ -107,7 +120,7 @@ function showRewardAdOption() {
 }
 
 function showRewardAd() {
-    show_9058300().then(() => {
+    show_9058300('pop').then(() => {
         alert("Reklama obejrzana – kontynuujesz quiz!");
         loadQuestion();
     }).catch(() => {
@@ -116,24 +129,32 @@ function showRewardAd() {
     });
 }
 
-function shuffleArray(array) {
-    for (let i = array.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [array[i], array[j]] = [array[j], array[i]];
-    }
-}
-
-function showInAppInterstitialAd() {
+function showInterstitialAd() {
     show_9058300({
         type: 'inApp',
         inAppSettings: {
-            frequency: 2,
+            frequency: 5,
             capping: 0.1,
             interval: 30,
             timeout: 5,
             everyPage: false
         }
     });
+}
+
+function showPopupAd() {
+    show_9058300('pop').then(() => {
+        console.log("Popup ad obejrzana.");
+    }).catch(() => {
+        console.warn("Błąd podczas ładowania popup ad.");
+    });
+}
+
+function shuffleArray(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+    }
 }
 
 startQuiz();
