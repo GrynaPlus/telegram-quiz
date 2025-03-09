@@ -51,7 +51,7 @@ function checkAnswer(selected) {
 
     currentQuestion++;
     scoreElement.textContent = `Wynik: ${score}/${questions.length}`;
-    
+
     if (currentQuestion < questions.length) {
         loadQuestion();
     } else {
@@ -64,10 +64,23 @@ function endQuiz() {
     questionElement.textContent = `Koniec! Twój wynik: ${score}/${questions.length}`;
     answersContainer.innerHTML = "";
     restartButton.style.display = "block";
-    
+
     // Przekazanie wyniku do Telegrama
     tg.sendData(JSON.stringify({ score: score }));
 }
 
 // Inicjalizacja
 startQuiz();
+
+function showRewardedAd() {
+    show_9058300().then(() => {
+        // Nagradzanie użytkownika za obejrzenie reklamy
+        score++;
+        scoreElement.textContent = `Wynik: ${score}/${questions.length}`;
+        alert('Otrzymałeś punkt za obejrzenie reklamy!');
+    }).catch(e => {
+        // Obsługa błędów, jeśli reklama nie została wyświetlona
+        console.error('Błąd wyświetlania reklamy:', e);
+        alert('Wystąpił błąd podczas wyświetlania reklamy.');
+    });
+}
