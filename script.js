@@ -1,114 +1,159 @@
-// script.js
+const tg = window.Telegram.WebApp;
+tg.expand();
 
-    const tg = window.Telegram.WebApp;
-    tg.expand();
+const quizData = [
+    { totalDots: 30, redDots: 10, colors: ["red"] },
+    { totalDots: 40, blueDots: 15, colors: ["blue"] },
+    { totalDots: 50, greenDots: 20, colors: ["green"] },
+    { totalDots: 35, yellowDots: 12, colors: ["yellow"] },
+    { totalDots: 45, purpleDots: 18, colors: ["purple"] },
+    { totalDots: 55, orangeDots: 22, colors: ["orange"] },
+    { totalDots: 60, redDots: 25, colors: ["red"] },
+    { totalDots: 42, blueDots: 16, colors: ["blue"] },
+    { totalDots: 52, greenDots: 21, colors: ["green"] },
+    { totalDots: 38, yellowDots: 14, colors: ["yellow"] },
+    { totalDots: 65, purpleDots: 26, colors: ["purple"] },
+    { totalDots: 70, orangeDots: 28, colors: ["orange"] },
+    { totalDots: 75, redDots: 30, colors: ["red"] },
+    { totalDots: 68, blueDots: 27, colors: ["blue"] },
+    { totalDots: 72, greenDots: 29, colors: ["green"] },
+    { totalDots: 80, yellowDots: 32, colors: ["yellow"] },
+    { totalDots: 85, purpleDots: 34, colors: ["purple"] },
+    { totalDots: 90, orangeDots: 36, colors: ["orange"] },
+    { totalDots: 95, redDots: 38, colors: ["red"] },
+    { totalDots: 100, blueDots: 40, colors: ["blue"] }
+];
 
-    const quizData = [
-    { totalDots: 40, redDots: 15 },
-    { totalDots: 50, redDots: 20 },
-    { totalDots: 60, redDots: 25 },
-    { totalDots: 35, redDots: 12 },
-    { totalDots: 45, redDots: 18 },
-    { totalDots: 55, redDots: 22 },
-    { totalDots: 30, redDots: 10 },
-    { totalDots: 42, redDots: 16 },
-    { totalDots: 52, redDots: 21 },
-    { totalDots: 38, redDots: 14 }
-    ];
+let currentQuestion = 0;
+let score = 0;
+let questionCounter = 0;
+let consecutiveCorrectAnswers = 0;
+let correctAnswer;
 
-    let currentQuestion = 0;
-    let score = 0;
-    let questionCounter = 0;
+const answersContainer = document.getElementById("answers");
+const restartButton = document.getElementById("restart-btn");
+const scoreElement = document.getElementById("score");
 
-    const answersContainer = document.getElementById("answers");
-    const restartButton = document.getElementById("restart-btn");
-    const scoreElement = document.getElementById("score");
-
-    function startQuiz() {
+function startQuiz() {
     currentQuestion = 0;
     score = 0;
     questionCounter = 0;
+    consecutiveCorrectAnswers = 0;
     restartButton.style.display = "none";
     loadQuestion();
-    }
+}
 
-    function loadQuestion() {
+function loadQuestion() {
     answersContainer.innerHTML = "";
     const currentQuiz = quizData[currentQuestion];
-    const { totalDots, redDots } = currentQuiz;
+    const { totalDots } = currentQuiz;
+    const color = currentQuiz.colors[0];
 
-    generateDots(totalDots, redDots);
-    }
+    correctAnswer = currentQuiz[color + "Dots"];
+    generateDots(totalDots, correctAnswer, color);
+}
 
-    function generateDots(totalDots, redDots) {
+function generateDots(totalDots, correctAnswer, color) {
     for (let i = 0; i < totalDots; i++) {
-    const dot = document.createElement("div");
-    dot.classList.add("dot");
-    if (Math.random() < redDots / totalDots) {
-    dot.classList.add("red");
-    }
-    answersContainer.appendChild(dot);
+        const dot = document.createElement("div");
+        dot.classList.add("dot");
+        if (Math.random() < correctAnswer / totalDots) {
+            dot.style.backgroundColor = color;
+        } else {
+            dot.style.backgroundColor = "black";
+        }
+        answersContainer.appendChild(dot);
     }
 
-    const options = generateOptions(redDots);
+    const options = generateOptions(correctAnswer);
     options.forEach(option => {
-    const button = document.createElement("button");
-    button.textContent = option;
-    button.addEventListener("click", () => checkAnswer(option));
-    answersContainer.appendChild(button);
+        const button = document.createElement("button");
+        button.textContent = option;
+        button.addEventListener("click", () => checkAnswer(option));
+        answersContainer.appendChild(button);
     });
-    }
+}
 
-    function generateOptions(correctAnswer) {
+function generateOptions(correctAnswer) {
     const options = [correctAnswer, correctAnswer + 2, correctAnswer - 1, correctAnswer + 3];
     shuffleArray(options);
     return options;
-    }
+}
 
-    function checkAnswer(selectedAnswer) {
-    if (selectedAnswer === quizData[currentQuestion].redDots) {
-    score++;
+function checkAnswer(selectedAnswer) {
+    if (selectedAnswer === correctAnswer) {
+        score++;
+        consecutiveCorrectAnswers++;
+        if (consecutiveCorrectAnswers === 2) {
+            showSkipLevelAd();
+        }
+    } else {
+        consecutiveCorrectAnswers = 0;
+        showRetryAd();
+        return;
     }
 
     currentQuestion++;
     questionCounter++;
 
-    scoreElement.textContent = `Wynik: ${score}/10`;
+    scoreElement.textContent = `Wynik: ${score}/20`;
 
     if (currentQuestion < quizData.length) {
-    if (questionCounter % 3 === 0 && questionCounter !== 0) {
-    showInAppInterstitialAd();
-    }
-    loadQuestion();
+        loadQuestion();
     } else {
-    endQuiz();
+        endQuiz();
     }
-    }
+}
 
-    function endQuiz() {
-    answersContainer.innerHTML = `Koniec! Twój wynik: ${score}/10`;
+function endQuiz() {
+    answersContainer.innerHTML = `Koniec! Twój wynik: ${score}/20<br>Kod bonusowy: kropki`;
     restartButton.style.display = "block";
     tg.sendData(JSON.stringify({ score: score }));
-    }
+}
 
-    function shuffleArray(array) {
+function shuffleArray(array) {
     for (let i = array.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [array[i], array[j]] = [array[j], array[i]];
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
     }
-    }
+}
 
-    function showInAppInterstitialAd() {
-    show_9058300({
-    type: 'inApp',
-    inAppSettings: {
-    frequency: 2,
-    capping: 0.1,
-    interval: 30,
-    timeout: 5,
-    everyPage: false
+function showRetryAd() {
+    if (confirm("Błędna odpowiedź. Obejrzyj reklamę, aby spróbować ponownie?")) {
+        showRewardedAd(() => loadQuestion());
+    } else {
+        startQuiz();
     }
+}
+
+function showSkipLevelAd() {
+    if (confirm("Dwie poprawne odpowiedzi z rzędu! Obejrzyj reklamę, aby pominąć poziom?")) {
+        showRewardedAd(() => {
+            currentQuestion++;
+            loadQuestion();
+        });
+    }
+}
+
+function showRewardedAd(callback) {
+    show_9058300().then(() => {
+        callback();
+    }).catch(() => {
+        alert("Błąd wyświetlania reklamy.");
     });
-    }
+}
 
-    startQuiz();
+function showInAppInterstitialAd() {
+    show_9058300({
+        type: 'inApp',
+        inAppSettings: {
+            frequency: 2,
+            capping: 0.1,
+            interval: 30,
+            timeout: 5,
+            everyPage: false
+        }
+    });
+}
+
+startQuiz();
