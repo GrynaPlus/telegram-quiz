@@ -68,20 +68,54 @@ function generateOptions(correctAnswer) {
 function checkAnswer(selectedAnswer) {
     if (parseInt(selectedAnswer) === quizData[currentQuestion].redDots) {
         score++;
-    }
+        currentQuestion++;
+        questionCounter++;
+        scoreElement.textContent = `Wynik: ${score}/10`;
 
-    currentQuestion++;
-    questionCounter++;
-
-    scoreElement.textContent = `Wynik: ${score}/10`;
-
-    if (currentQuestion < quizData.length) {
-        if (questionCounter % 3 === 0 && questionCounter >= 3) {
-            showInAppInterstitialAd();
+        if (score === 10) {
+            showBonusCode();
+        } else if (currentQuestion < quizData.length) {
+            loadQuestion();
+        } else {
+            endQuiz();
         }
-        loadQuestion();
     } else {
-        endQuiz();
+        showRewardedAd();
+    }
+}
+
+function showRewardedAd() {
+    if (typeof show_9058300 === "function") {
+        show_9058300().then(() => {
+            alert('Otrzymałeś drugą szansę!');
+            loadQuestion();
+        }).catch(() => {
+            alert('Nie obejrzano reklamy. Postęp został zresetowany.');
+            resetProgress();
+        });
+    } else {
+        alert('Reklama niedostępna. Postęp został zresetowany.');
+        resetProgress();
+    }
+}
+
+function resetProgress() {
+    currentQuestion = 0;
+    score = 0;
+    questionCounter = 0;
+    scoreElement.textContent = `Wynik: ${score}/10`;
+    loadQuestion();
+}
+
+function showBonusCode() {
+    answersContainer.innerHTML = `
+        <h2>Gratulacje! Zdobyłeś 10/10 punktów!</h2>
+        <p>Twój kod bonusowy: <strong>kropki</strong></p>
+    `;
+    restartButton.style.display = "block";
+
+    if (tg) {
+        tg.sendData(JSON.stringify({ bonusCode: "kropki" }));
     }
 }
 
@@ -89,24 +123,8 @@ function endQuiz() {
     answersContainer.innerHTML = `Koniec! Twój wynik: ${score}/10`;
     restartButton.style.display = "block";
 
-    // Wysłanie wyniku do Telegram WebApp
     if (tg) {
         tg.sendData(JSON.stringify({ score: score }));
-    }
-}
-
-function showInAppInterstitialAd() {
-    if (typeof show_9058300 === "function") {
-        show_9058300({
-            type: 'inApp',
-            inAppSettings: {
-                frequency: 2,
-                capping: 0.1,
-                interval: 30,
-                timeout: 5,
-                everyPage: false
-            }
-        });
     }
 }
 
