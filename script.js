@@ -1,10 +1,12 @@
 const tg = window.Telegram.WebApp;
 tg.expand();
 
-const quizData = Array.from({ length: 100 }, (_, i) => ({
-    totalDots: 30 + i * 2,
-    redDots: Math.floor((30 + i * 2) * 0.4)
-}));
+// Generowanie 1000 poziomów (max 200 kulek, 20-90% czerwonych)
+const quizData = Array.from({ length: 1000 }, (_, i) => {
+    const totalDots = Math.min(30 + i * 2, 200); // Rośnie do max 200
+    const redDots = Math.floor(totalDots * (0.2 + Math.random() * 0.7)); // 20% - 90%
+    return { totalDots, redDots };
+});
 
 let currentQuestion = parseInt(localStorage.getItem('currentQuestion')) || 0;
 let score = parseInt(localStorage.getItem('score')) || 0;
@@ -26,12 +28,12 @@ function startQuiz() {
 
 function loadQuestion() {
     answersContainer.innerHTML = "";
-    const currentQuiz = quizData[currentQuestion];
-    const { totalDots, redDots } = currentQuiz;
+    const { totalDots, redDots } = quizData[currentQuestion];
     generateDots(totalDots, redDots);
-    scoreElement.textContent = `Wynik: ${score}/100`;
+    scoreElement.textContent = `Wynik: ${score}/1000`;
 }
 
+// Generowanie kropek w układzie czarna, czarna, czerwona (na przemian)
 function generateDots(totalDots, redDots) {
     answersContainer.innerHTML = "";
     const dots = [];
@@ -43,6 +45,7 @@ function generateDots(totalDots, redDots) {
         const dot = document.createElement("div");
         dot.classList.add("dot");
 
+        // Co trzecia kropka jest czerwona (jeśli jeszcze są dostępne)
         if ((blackCount + 1) % 3 === 0 && redCount < redDots) {
             dot.classList.add("red");
             redCount++;
@@ -56,6 +59,7 @@ function generateDots(totalDots, redDots) {
     shuffleArray(dots);
     dots.forEach(dot => answersContainer.appendChild(dot));
 
+    // Generowanie odpowiedzi, zawsze z poprawną liczbą czerwonych kulek
     const options = generateOptions(redDots);
     options.forEach(option => {
         const button = document.createElement("button");
@@ -63,33 +67,50 @@ function generateDots(totalDots, redDots) {
         button.addEventListener("click", () => checkAnswer(option));
         answersContainer.appendChild(button);
     });
+
+    // Opcja pominięcia poziomu co 5 rund
+    if (currentQuestion % 5 === 0 && currentQuestion !== 0) {
+        const skipButton = document.createElement("button");
+        skipButton.textContent = "Pomiń poziom (Reklama)";
+        skipButton.addEventListener("click", showSkipAd);
+        answersContainer.appendChild(skipButton);
+    }
 }
 
+// Generowanie poprawnych i losowych odpowiedzi (blisko prawidłowej)
 function generateOptions(correctAnswer) {
-    const options = [correctAnswer, correctAnswer + 2, correctAnswer - 1, correctAnswer + 3];
-    shuffleArray(options);
-    return options;
+    const range = Math.max(3, Math.floor(4 + currentQuestion * 0.4)); // Im dalej, tym większy zakres
+    const options = new Set([correctAnswer]);
+
+    while (options.size < 4) {
+        let randomOffset = Math.floor(Math.random() * range) - Math.floor(range / 2);
+        let newOption = correctAnswer + randomOffset;
+
+        if (newOption > 0 && newOption !== correctAnswer) {
+            options.add(newOption);
+        }
+    }
+
+    return shuffleArray(Array.from(options));
 }
 
+// Sprawdzenie odpowiedzi
 function checkAnswer(selectedAnswer) {
     if (selectedAnswer === quizData[currentQuestion].redDots) {
         score++;
         currentQuestion++;
         questionCounter++;
-        
-        // Zapisz postęp w LocalStorage
+
+        // Zapisz postęp
         localStorage.setItem('currentQuestion', currentQuestion);
         localStorage.setItem('score', score);
 
-        if (currentQuestion === 100) {
+        if (currentQuestion === 1000) {
             showFinalMessage();
         } else {
-            if (questionCounter % 5 === 0) {
-                showInterstitialAd();
-            }
-            if (questionCounter % 7 === 0) {
-                showPopupAd();
-            }
+            // Reklamy w optymalnych momentach
+            if (questionCounter % 5 === 0) showInterstitialAd();
+            if (questionCounter % 7 === 0) showPopupAd();
             loadQuestion();
         }
     } else {
@@ -97,6 +118,7 @@ function checkAnswer(selectedAnswer) {
     }
 }
 
+// Komunikat końcowy po 1000 poziomach
 function showFinalMessage() {
     answersContainer.innerHTML = `<h2>Gratulacje Wariacie 420!</h2>`;
     restartButton.style.display = "block";
@@ -105,21 +127,18 @@ function showFinalMessage() {
     localStorage.removeItem('score');
 }
 
+// Oferowanie obejrzenia reklamy po błędzie
 function showRewardAdOption() {
     const message = document.createElement("p");
     message.innerHTML = "Źle! Chcesz obejrzeć reklamę, aby zachować postęp?";
 
     const yesButton = document.createElement("button");
     yesButton.textContent = "Tak, obejrzyj reklamę";
-    yesButton.addEventListener("click", () => {
-        showRewardAd();
-    });
+    yesButton.addEventListener("click", showRewardAd);
 
     const noButton = document.createElement("button");
     noButton.textContent = "Nie, zacznij od nowa";
-    noButton.addEventListener("click", () => {
-        startQuiz();
-    });
+    noButton.addEventListener("click", startQuiz);
 
     answersContainer.innerHTML = "";
     answersContainer.appendChild(message);
@@ -127,6 +146,7 @@ function showRewardAdOption() {
     answersContainer.appendChild(noButton);
 }
 
+// Obsługa reklamy nagradzanej (zachowanie postępu)
 function showRewardAd() {
     show_9058300('pop').then(() => {
         alert("Reklama obejrzana – kontynuujesz quiz!");
@@ -137,35 +157,37 @@ function showRewardAd() {
     });
 }
 
-function showInterstitialAd() {
-    show_9058300({
-        type: 'inApp',
-        inAppSettings: {
-            frequency: 5,
-            capping: 0.1,
-            interval: 30,
-            timeout: 5,
-            everyPage: false
-        }
-    });
-}
-
-function showPopupAd() {
+// Obsługa reklamy nagradzanej (pominięcie poziomu)
+function showSkipAd() {
     show_9058300('pop').then(() => {
-        console.log("Popup ad obejrzana.");
+        alert("Poziom pominięty!");
+        currentQuestion++;
+        loadQuestion();
     }).catch(() => {
-        console.warn("Błąd podczas ładowania popup ad.");
+        alert("Nie udało się załadować reklamy.");
     });
 }
 
+// Obsługa reklamy pełnoekranowej (Interstitial Ad)
+function showInterstitialAd() {
+    show_9058300('inApp');
+}
+
+// Obsługa reklamy popup (Popup Ad)
+function showPopupAd() {
+    show_9058300('pop');
+}
+
+// Tasowanie tablicy (Fisher-Yates shuffle)
 function shuffleArray(array) {
     for (let i = array.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
         [array[i], array[j]] = [array[j], array[i]];
     }
+    return array;
 }
 
-// Sprawdź, czy są zapisane dane i załaduj je
+// Wznowienie gry z zapisanego stanu
 if (currentQuestion > 0) {
     alert(`Wznawiasz grę od poziomu ${currentQuestion + 1}`);
     loadQuestion();
