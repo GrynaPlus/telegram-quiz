@@ -88,11 +88,11 @@ function showInAppInterstitialAd() {
     show_9058300({
         type: 'inApp',
         inAppSettings: {
-            frequency: 1, // Wyświetlamy tylko jedną reklamę
-            capping: 1, // W ciągu jednej godziny
-            interval: 0, // Bez odstępu czasowego
-            timeout: 5, // 5 sekund opóźnienia
-            everyPage: false // Sesja nie jest resetowana przy przejściu między stronami
+            frequency: 2,
+            capping: 0.1,
+            interval: 30,
+            timeout: 5,
+            everyPage: false
         }
     });
 }
