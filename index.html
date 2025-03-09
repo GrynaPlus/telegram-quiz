@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="pl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Telegram Quiz</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+</head>
+
+<body>
+    <div id="app">
+        <h1>Quiz w Telegramie</h1>
+
+        <!-- Pytanie -->
+        <p id="question">Ładowanie pytania...</p>
+
+        <!-- Odpowiedzi -->
+        <div id="answers"></div>
+
+        <!-- Wynik -->
+        <button id="restart-btn" onclick="startQuiz()">Zagraj ponownie</button>
+        <p id="score">Wynik: 0/10</p>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>
