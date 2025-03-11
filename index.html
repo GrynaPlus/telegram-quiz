@@ -1,24 +1,27 @@
 <!DOCTYPE html>
 <html lang="pl">
-
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quiz z Kropkami</title>
-    <link rel="stylesheet" href="style.css">
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <script src="//whephiwums.com/sdk.js" data-zone="9058300" data-sdk="show_9058300"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quiz z Kropkami</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <script src="//whephiwums.com/sdk.js" data-zone="9058300" data-sdk="show_9058300"></script>
 </head>
-
 <body>
-    <div id="app">
-        <h1>Policz Czerwone Kropki</h1>
-        <div id="answers"></div>
-        <button id="restart-btn" onclick="startQuiz()">Zagraj ponownie</button>
-        <p id="score">Wynik: 0/10</p>
+  <div id="app" class="fade-in">
+    <!-- Sekcja ustawiania nazwy użytkownika, wyświetlana tylko raz -->
+    <div id="username-container">
+      <input type="text" id="username-input" placeholder="Wprowadź nazwę użytkownika">
+      <button id="set-username-btn" onclick="setUsername()">Ustaw nazwę</button>
     </div>
-
-    <script src="script.js"></script>
+    <!-- Kontener, w którym zostanie wygenerowany rysunek nazwy z kropek -->
+    <div id="username-display"></div>
+    <h1 id="game-title">Policz Czerwone Kropki</h1>
+    <div id="answers"></div>
+    <button id="restart-btn" onclick="startQuiz()">Zagraj ponownie</button>
+    <p id="score">Wynik: 0/10</p>
+  </div>
+  <script src="script.js"></script>
 </body>
-
 </html>
