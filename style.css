@@ -1,59 +1,206 @@
-/* Resetowanie stylów i główny układ */
+/* Reset stylów */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* Dynamiczne tło z animacją gradientu */
 body {
-    font-family: Arial, sans-serif;
-    background: #f4f4f9;
-    color: #333;
-    text-align: center;
-    margin: 0;
-    padding: 20px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: linear-gradient(135deg, #74ABE2, #5563DE);
+  background-size: 400% 400%;
+  animation: gradientBG 15s ease infinite;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+}
+
+/* Animacja zmiany tła */
+@keyframes gradientBG {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
 }
 
 /* Kontener aplikacji */
 #app {
-    max-width: 600px;
-    margin: 0 auto;
-    padding: 20px;
-    border-radius: 12px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    background: white;
+  width: 90%;
+  max-width: 600px;
+  background: #fff;
+  padding: 30px 40px;
+  border-radius: 15px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+  text-align: center;
+  animation: fadeIn 1s ease;
 }
 
-/* Styl kropek */
+/* Animacja fadeIn dla kontenera */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.fade-in {
+  animation: fadeIn 1s ease;
+}
+
+/* Sekcja ustawiania nazwy */
+#username-container {
+  margin-bottom: 20px;
+}
+
+#username-container input {
+  padding: 10px 14px;
+  font-size: 16px;
+  border: 2px solid #ccc;
+  border-radius: 8px;
+  transition: border-color 0.3s;
+}
+
+#username-container input:focus {
+  border-color: #5563DE;
+}
+
+#username-container button {
+  margin-left: 10px;
+  padding: 10px 18px;
+  font-size: 16px;
+  background-color: #5563DE;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+#username-container button:hover {
+  background-color: #3b47b7;
+}
+
+/* Kontener wyświetlania nazwy użytkownika – wymuszenie jednej linii */
+#username-display {
+  margin-bottom: 15px;
+  display: flex;
+  flex-wrap: nowrap;       /* wymusza jedną linię */
+  justify-content: center;
+  gap: 4px;                /* odstęp między literami */
+  overflow: hidden;        /* utnie nadmiar, jeśli byłby za długi */
+}
+
+/* Kontener i wiersze liter w nazwie użytkownika */
+.letter-container {
+  display: inline-block;
+}
+
+.letter-row {
+  display: flex;
+}
+
+/* Kropki tworzące literę w nazwie użytkownika (zmniejszone) */
+.letter-dot {
+  width: 3px;
+  height: 3px;
+  background-color: #5563DE;
+  margin: 1px;
+  border-radius: 50%;
+}
+
+/* Puste miejsce w literze */
+.empty-letter {
+  width: 3px;
+  height: 3px;
+  margin: 1px;
+}
+
+/* Nagłówek gry */
+#game-title {
+  margin-bottom: 20px;
+  font-size: 32px;
+  color: #333;
+}
+
+/* Kontener odpowiedzi w quizie */
+#answers {
+  margin-bottom: 20px;
+}
+
+/* Większe kropki w samym quizie (liczenie czerwonych) z animacją pulsowania i cieniem */
 .dot {
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    margin: 5px;
-    display: inline-block;
-    background-color: black;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  margin: 6px;
+  display: inline-block;
+  background-color: #333;
+  opacity: 0;
+  animation: popIn 0.5s forwards, pulse 2s infinite;
+  box-shadow: 0 0 6px rgba(0,0,0,0.3);
 }
 
-/* Czerwone kropki */
+/* Animacja pojawiania się kropki */
+@keyframes popIn {
+  from { transform: scale(0); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+/* Animacja pulsowania kropki */
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.2); }
+}
+
+/* Czerwone kropki w quizie */
 .dot.red {
-    background-color: red;
+  background-color: #E74C3C;
+  box-shadow: 0 0 8px rgba(231,76,60,0.6);
 }
 
 /* Przycisk restartu */
 #restart-btn {
-    display: none;
-    margin-top: 20px;
-    padding: 10px 20px;
-    font-size: 16px;
-    cursor: pointer;
-    background-color: #4CAF50;
-    color: white;
-    border: none;
-    border-radius: 8px;
+  display: none;
+  margin-top: 20px;
+  padding: 14px 28px;
+  font-size: 16px;
+  background-color: #27AE60;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s, transform 0.3s;
 }
 
-/* Przycisk odpowiedzi */
+#restart-btn:hover {
+  background-color: #1e8449;
+  transform: scale(1.05);
+}
+
+/* Przyciski odpowiedzi w quizie */
 #answers button {
-    margin: 10px;
-    padding: 10px 15px;
-    font-size: 14px;
-    cursor: pointer;
-    background-color: #2196F3;
-    color: white;
-    border: none;
-    border-radius: 8px;
+  margin: 8px;
+  padding: 12px 20px;
+  font-size: 14px;
+  background-color: #5563DE;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s, transform 0.2s;
+}
+
+#answers button:hover {
+  background-color: #3b47b7;
+  transform: scale(1.05);
+}
+
+/* Komunikaty i przyciski opcji reklam */
+#answers p {
+  margin-bottom: 15px;
+  font-size: 16px;
+  color: #333;
+}
+
+#answers button {
+  margin-top: 10px;
 }
