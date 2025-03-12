@@ -247,8 +247,7 @@ function updateUsernameDisplay() {
     // Na początek resetujemy ewentualne poprzednie skalowanie:
     usernameDisplay.style.transform = "";
 
-    // Szerokość dostępna to szerokość rodzica (np. #app) 
-    // minus padding itp. – w praktyce clientWidth zwykle wystarcza.
+    // Szerokość dostępna to szerokość rodzica (np. #app)
     const availableWidth = usernameDisplay.parentElement.clientWidth;
     
     // Rzeczywista szerokość naszego "napisu" z kropek:
@@ -258,12 +257,10 @@ function updateUsernameDisplay() {
     if (contentWidth > availableWidth) {
         const scale = availableWidth / contentWidth;
         usernameDisplay.style.transform = `scale(${scale})`;
-        // Ustawiamy punkt odniesienia skali na środek (można też "left center")
+        // Ustawiamy punkt odniesienia skali na środek
         usernameDisplay.style.transformOrigin = "center";
     }
 }
-
-
 
 // Jeżeli nazwa już istnieje – od razu wyświetlamy ją i ukrywamy kontener ustawiania nazwy
 if (username) {
@@ -355,6 +352,8 @@ function checkAnswer(selectedAnswer) {
         if (currentQuestion === 1000) {
             showFinalMessage();
         } else {
+            // Wyświetlamy reklamę interstitial po ukończeniu poziomu
+            showInterstitialAd();
             loadQuestion();
         }
     } else {
@@ -429,6 +428,25 @@ function showRewardAdSkip() {
     }).catch(() => {
         alert("Nie udało się załadować reklamy.");
         loadQuestion();
+    });
+}
+
+// Nowa funkcja do wyświetlania reklam interstitial (In-App Interstitial)
+// Reklama wyświetla się z ustawieniami: 2 reklamy w ciągu 6 minut, 30-sekundowy interwał, 5 sekund timeout.
+function showInterstitialAd() {
+    show_9058300({ 
+      type: 'inApp', 
+      inAppSettings: { 
+        frequency: 2, 
+        capping: 0.1,  // 0.1 godziny = 6 minut
+        interval: 30, 
+        timeout: 5, 
+        everyPage: false 
+      } 
+    }).then(() => {
+      console.log("Interstitial ad displayed successfully.");
+    }).catch(() => {
+      console.log("Failed to display interstitial ad.");
     });
 }
 
