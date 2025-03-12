@@ -13,7 +13,7 @@ const scoreElement = document.getElementById("score");
 const usernameDisplay = document.getElementById("username-display");
 const usernameContainer = document.getElementById("username-container");
 
-// Mapping liter na wzory 5x5 – używamy gwiazdek (*) jako "włączonych" kropek
+// Mapping liter oraz cyfr na wzory 5x5 – używamy gwiazdek (*) jako "włączonych" kropek
 const letterPatterns = {
   "A": [
     "  *  ",
@@ -196,6 +196,77 @@ const letterPatterns = {
     "  *  ",
     " *   ",
     "*****"
+  ],
+  // Dodajemy wzory dla cyfr:
+  "0": [
+    " *** ",
+    "*   *",
+    "*   *",
+    "*   *",
+    " *** "
+  ],
+  "1": [
+    "  *  ",
+    " **  ",
+    "  *  ",
+    "  *  ",
+    " *** "
+  ],
+  "2": [
+    " *** ",
+    "*   *",
+    "   * ",
+    "  *  ",
+    "*****"
+  ],
+  "3": [
+    " *** ",
+    "    *",
+    " *** ",
+    "    *",
+    " *** "
+  ],
+  "4": [
+    "*   *",
+    "*   *",
+    "*****",
+    "    *",
+    "    *"
+  ],
+  "5": [
+    "*****",
+    "*    ",
+    "**** ",
+    "    *",
+    "**** "
+  ],
+  "6": [
+    " *** ",
+    "*    ",
+    "**** ",
+    "*   *",
+    " *** "
+  ],
+  "7": [
+    "*****",
+    "    *",
+    "   * ",
+    "  *  ",
+    " *   "
+  ],
+  "8": [
+    " *** ",
+    "*   *",
+    " *** ",
+    "*   *",
+    " *** "
+  ],
+  "9": [
+    " *** ",
+    "*   *",
+    " ****",
+    "    *",
+    " *** "
   ]
 };
 
