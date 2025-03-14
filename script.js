@@ -423,8 +423,10 @@ function checkAnswer(selectedAnswer) {
         if (currentQuestion === 1000) {
             showFinalMessage();
         } else {
-            // Wyświetlamy reklamę interstitial po ukończeniu poziomu
-            showInterstitialAd();
+            // Wyświetl reklamę interstitial tylko co 5 poziom (poza zerowym)
+            if (currentQuestion % 5 === 0 && currentQuestion !== 0) {
+                showInterstitialAd();
+            }
             loadQuestion();
         }
     } else {
