@@ -6,7 +6,7 @@ tg.expand();
 
 // ---- KONFIGURACJA Google Sheets ----
 const G_SHEETS_URL =
-  "https://script.google.com/macros/s/AKfycbxE60jxB3bsW5DmFsMGEMYkdsArMAxpNN765lozK8xuEgNS591Pl44IE_zcEZeWgvaV/exec";  // <-- Twój Web App URL
+  "https://script.google.com/macros/s/AKfycbx9-0X_sYVTQuLwAjOUwZhU6VGNT1PnmSK2FrcMRklt8FVwA5a_ijipv-TPqLEpLHHC/exec";  // <-- Twój Web App URL
 
 // ---- Funkcja wysyłki do arkusza ----
 function sendUserData(level) {
