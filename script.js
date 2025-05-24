@@ -458,7 +458,7 @@ function showRewardAdOption() {
 }
 
 function showRewardAd() {
-    show_9058300().then(() => {
+    show_9373277().then(() => {
         alert('You have seen a rewarded ad!');
         loadQuestion();
     }).catch(() => {
@@ -468,7 +468,7 @@ function showRewardAd() {
 }
 
 function showExtraRewardAd() {
-    show_9058300().then(() => {
+    show_9373277().then(() => {
         alert('Bonus! You have seen an extra rewarded ad and earned a bonus point!');
         score++;
         localStorage.setItem('score', score);
@@ -493,7 +493,7 @@ function showSkipRewardAdOption() {
 }
 
 function showRewardAdSkip() {
-    show_9058300().then(() => {
+    show_9373277().then(() => {
         alert("You have seen a rewarded ad. Level skipped!");
         currentQuestion++;
         localStorage.setItem('currentQuestion', currentQuestion);
@@ -507,7 +507,7 @@ function showRewardAdSkip() {
 // Nowa funkcja do wyświetlania reklam interstitial (In-App Interstitial)
 // Reklama wyświetla się z ustawieniami: 2 reklamy w ciągu 6 minut, 30-sekundowy interwał, 5 sekund timeout.
 function showInterstitialAd() {
-    show_9058300({ 
+    show_9373277({ 
       type: 'inApp', 
       inAppSettings: { 
         frequency: 1, 
