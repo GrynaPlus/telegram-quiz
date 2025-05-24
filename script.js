@@ -1,7 +1,6 @@
 const tg = window.Telegram.WebApp;
 tg.expand();
 
-// Pobieramy zapisane dane użytkownika, jeśli istnieją
 let currentQuestion = parseInt(localStorage.getItem('currentQuestion')) || 0;
 let score = parseInt(localStorage.getItem('score')) || 0;
 let username = localStorage.getItem('username') || "";
@@ -13,333 +12,59 @@ const scoreElement = document.getElementById("score");
 const usernameDisplay = document.getElementById("username-display");
 const usernameContainer = document.getElementById("username-container");
 
-// Mapping liter oraz cyfr na wzory 5x5 – używamy gwiazdek (*) jako "włączonych" kropek
-const letterPatterns = {
-  "A": [
-    "  *  ",
-    " * * ",
-    "*****",
-    "*   *",
-    "*   *"
-  ],
-  "B": [
-    "**** ",
-    "*   *",
-    "**** ",
-    "*   *",
-    "**** "
-  ],
-  "C": [
-    " ****",
-    "*    ",
-    "*    ",
-    "*    ",
-    " ****"
-  ],
-  "D": [
-    "**** ",
-    "*   *",
-    "*   *",
-    "*   *",
-    "**** "
-  ],
-  "E": [
-    "*****",
-    "*    ",
-    "***  ",
-    "*    ",
-    "*****"
-  ],
-  "F": [
-    "*****",
-    "*    ",
-    "***  ",
-    "*    ",
-    "*    "
-  ],
-  "G": [
-    " ****",
-    "*    ",
-    "*  **",
-    "*   *",
-    " ****"
-  ],
-  "H": [
-    "*   *",
-    "*   *",
-    "*****",
-    "*   *",
-    "*   *"
-  ],
-  "I": [
-    " *** ",
-    "  *  ",
-    "  *  ",
-    "  *  ",
-    " *** "
-  ],
-  "J": [
-    "  ***",
-    "   * ",
-    "   * ",
-    "*  * ",
-    " **  "
-  ],
-  "K": [
-    "*   *",
-    "*  * ",
-    "***  ",
-    "*  * ",
-    "*   *"
-  ],
-  "L": [
-    "*    ",
-    "*    ",
-    "*    ",
-    "*    ",
-    "*****"
-  ],
-  "M": [
-    "*   *",
-    "** **",
-    "* * *",
-    "*   *",
-    "*   *"
-  ],
-  "N": [
-    "*   *",
-    "**  *",
-    "* * *",
-    "*  **",
-    "*   *"
-  ],
-  "O": [
-    " *** ",
-    "*   *",
-    "*   *",
-    "*   *",
-    " *** "
-  ],
-  "P": [
-    "**** ",
-    "*   *",
-    "**** ",
-    "*    ",
-    "*    "
-  ],
-  "Q": [
-    " *** ",
-    "*   *",
-    "*   *",
-    "*  **",
-    " ****"
-  ],
-  "R": [
-    "**** ",
-    "*   *",
-    "**** ",
-    "*  * ",
-    "*   *"
-  ],
-  "S": [
-    " ****",
-    "*    ",
-    " *** ",
-    "    *",
-    "**** "
-  ],
-  "T": [
-    "*****",
-    "  *  ",
-    "  *  ",
-    "  *  ",
-    "  *  "
-  ],
-  "U": [
-    "*   *",
-    "*   *",
-    "*   *",
-    "*   *",
-    " *** "
-  ],
-  "V": [
-    "*   *",
-    "*   *",
-    "*   *",
-    " * * ",
-    "  *  "
-  ],
-  "W": [
-    "*   *",
-    "*   *",
-    "* * *",
-    "** **",
-    "*   *"
-  ],
-  "X": [
-    "*   *",
-    " * * ",
-    "  *  ",
-    " * * ",
-    "*   *"
-  ],
-  "Y": [
-    "*   *",
-    " * * ",
-    "  *  ",
-    "  *  ",
-    "  *  "
-  ],
-  "Z": [
-    "*****",
-    "   * ",
-    "  *  ",
-    " *   ",
-    "*****"
-  ],
-  // Dodajemy wzory dla cyfr:
-  "0": [
-    " *** ",
-    "*   *",
-    "*   *",
-    "*   *",
-    " *** "
-  ],
-  "1": [
-    "  *  ",
-    " **  ",
-    "  *  ",
-    "  *  ",
-    " *** "
-  ],
-  "2": [
-    " *** ",
-    "*   *",
-    "   * ",
-    "  *  ",
-    "*****"
-  ],
-  "3": [
-    " *** ",
-    "    *",
-    " *** ",
-    "    *",
-    " *** "
-  ],
-  "4": [
-    "*   *",
-    "*   *",
-    "*****",
-    "    *",
-    "    *"
-  ],
-  "5": [
-    "*****",
-    "*    ",
-    "**** ",
-    "    *",
-    "**** "
-  ],
-  "6": [
-    " *** ",
-    "*    ",
-    "**** ",
-    "*   *",
-    " *** "
-  ],
-  "7": [
-    "*****",
-    "    *",
-    "   * ",
-    "  *  ",
-    " *   "
-  ],
-  "8": [
-    " *** ",
-    "*   *",
-    " *** ",
-    "*   *",
-    " *** "
-  ],
-  "9": [
-    " *** ",
-    "*   *",
-    " ****",
-    "    *",
-    " *** "
-  ]
-};
-
-// Funkcja ustawiająca nazwę użytkownika
+// === Nazwa użytkownika ===
 function setUsername() {
     username = document.getElementById("username-input").value.trim();
     if (username) {
         localStorage.setItem('username', username);
         updateUsernameDisplay();
-        // Ukrywamy kontener ustawiania nazwy
         usernameContainer.style.display = "none";
     }
 }
 
-// Aktualizacja widoku nazwy użytkownika – rysowanie liter z kropek i skalowanie, jeśli trzeba
 function updateUsernameDisplay() {
-    // Czyścimy poprzednią zawartość
     usernameDisplay.innerHTML = "";
-
-    // Tworzymy kropkowe litery
     const name = username.toUpperCase();
     for (let char of name) {
         const pattern = letterPatterns[char];
-        if (!pattern) continue;  // pomijamy nieobsługiwane znaki
+        if (!pattern) continue;
         const letterContainer = document.createElement("div");
         letterContainer.classList.add("letter-container");
-
         for (let row of pattern) {
             const rowDiv = document.createElement("div");
             rowDiv.classList.add("letter-row");
             for (let ch of row) {
-                if (ch === "*") {
-                    const dot = document.createElement("div");
-                    dot.classList.add("letter-dot");
-                    rowDiv.appendChild(dot);
-                } else {
-                    const empty = document.createElement("div");
-                    empty.classList.add("empty-letter");
-                    rowDiv.appendChild(empty);
-                }
+                const dot = document.createElement("div");
+                dot.className = ch === "*" ? "letter-dot" : "empty-letter";
+                rowDiv.appendChild(dot);
             }
             letterContainer.appendChild(rowDiv);
         }
         usernameDisplay.appendChild(letterContainer);
     }
 
-    // ---- AUTOMATYCZNE SKALOWANIE ----
-
-    // Na początek resetujemy ewentualne poprzednie skalowanie:
     usernameDisplay.style.transform = "";
-
-    // Szerokość dostępna to szerokość rodzica (np. #app)
     const availableWidth = usernameDisplay.parentElement.clientWidth;
-    
-    // Rzeczywista szerokość naszego "napisu" z kropek:
     const contentWidth = usernameDisplay.scrollWidth;
-
-    // Jeśli zawartość jest szersza niż dostępna przestrzeń, skalujemy
     if (contentWidth > availableWidth) {
         const scale = availableWidth / contentWidth;
         usernameDisplay.style.transform = `scale(${scale})`;
-        // Ustawiamy punkt odniesienia skali na środek
         usernameDisplay.style.transformOrigin = "center";
     }
 }
 
-// Jeżeli nazwa już istnieje – od razu wyświetlamy ją i ukrywamy kontener ustawiania nazwy
 if (username) {
     updateUsernameDisplay();
     usernameContainer.style.display = "none";
 }
 
-// Reszta kodu gry (quiz, reklamy itd.) pozostaje bez zmian
+// === Gra ===
+
+const quizData = Array.from({ length: 1000 }, (_, i) => {
+    const totalDots = Math.min(30 + i * 2, 200);
+    const redDots = Math.floor(totalDots * (0.2 + Math.random() * 0.7));
+    return { totalDots, redDots };
+});
 
 function startQuiz() {
     currentQuestion = 0;
@@ -357,12 +82,6 @@ function loadQuestion() {
     generateDots(totalDots, redDots);
     scoreElement.textContent = `Wynik: ${score}/1000`;
 }
-
-const quizData = Array.from({ length: 1000 }, (_, i) => {
-    const totalDots = Math.min(30 + i * 2, 200);
-    const redDots = Math.floor(totalDots * (0.2 + Math.random() * 0.7));
-    return { totalDots, redDots };
-});
 
 function generateDots(totalDots, redDots) {
     answersContainer.innerHTML = "";
@@ -382,6 +101,7 @@ function generateDots(totalDots, redDots) {
     }
     shuffleArray(dots);
     dots.forEach(dot => answersContainer.appendChild(dot));
+
     const options = generateOptions(redDots);
     options.forEach(option => {
         const button = document.createElement("button");
@@ -389,6 +109,7 @@ function generateDots(totalDots, redDots) {
         button.addEventListener("click", () => checkAnswer(option));
         answersContainer.appendChild(button);
     });
+
     if (currentQuestion % 5 === 0 && currentQuestion !== 0) {
         const skipButton = document.createElement("button");
         skipButton.textContent = "Pomiń poziom (Reklama)";
@@ -417,16 +138,18 @@ function checkAnswer(selectedAnswer) {
         questionCounter++;
         localStorage.setItem('currentQuestion', currentQuestion);
         localStorage.setItem('score', score);
+
         if (questionCounter % 10 === 0) {
             showExtraRewardAd();
         }
+
         if (currentQuestion === 1000) {
             showFinalMessage();
+        } else if (currentQuestion % 5 === 0) {
+            showInterstitialAd().finally(() => {
+                loadQuestion();
+            });
         } else {
-            // Wyświetl reklamę interstitial tylko co 5 poziom (poza zerowym)
-            if (currentQuestion % 5 === 0 && currentQuestion !== 0) {
-                showInterstitialAd();
-            }
             loadQuestion();
         }
     } else {
@@ -459,7 +182,7 @@ function showRewardAdOption() {
 
 function showRewardAd() {
     show_9373277().then(() => {
-        alert('You have seen a rewarded ad!');
+        alert('Reklama zakończona – kontynuujesz!');
         loadQuestion();
     }).catch(() => {
         alert("Nie udało się załadować reklamy – zaczynasz od nowa.");
@@ -469,23 +192,23 @@ function showRewardAd() {
 
 function showExtraRewardAd() {
     show_9373277().then(() => {
-        alert('Bonus! You have seen an extra rewarded ad and earned a bonus point!');
+        alert('Bonus! Obejrzałeś reklamę i zdobywasz dodatkowy punkt!');
         score++;
         localStorage.setItem('score', score);
     }).catch(() => {
-        alert("Nie udało się załadować bonusowej reklamy.");
+        alert("Nie udało się załadować reklamy bonusowej.");
     });
 }
 
 function showSkipRewardAdOption() {
     answersContainer.innerHTML = "";
     const message = document.createElement("p");
-    message.innerHTML = "Czy chcesz obejrzeć reklamę, aby pominąć poziom?";
+    message.innerHTML = "Chcesz pominąć poziom za reklamę?";
     const yesButton = document.createElement("button");
     yesButton.textContent = "Tak, obejrzyj reklamę";
     yesButton.addEventListener("click", showRewardAdSkip);
     const noButton = document.createElement("button");
-    noButton.textContent = "Nie, pozostań na poziomie";
+    noButton.textContent = "Nie";
     noButton.addEventListener("click", loadQuestion);
     answersContainer.appendChild(message);
     answersContainer.appendChild(yesButton);
@@ -494,7 +217,7 @@ function showSkipRewardAdOption() {
 
 function showRewardAdSkip() {
     show_9373277().then(() => {
-        alert("You have seen a rewarded ad. Level skipped!");
+        alert("Poziom pominięty!");
         currentQuestion++;
         localStorage.setItem('currentQuestion', currentQuestion);
         loadQuestion();
@@ -504,25 +227,21 @@ function showRewardAdSkip() {
     });
 }
 
-// Nowa funkcja do wyświetlania reklam interstitial (In-App Interstitial)
-// Reklama wyświetla się z ustawieniami: 2 reklamy w ciągu 6 minut, 30-sekundowy interwał, 5 sekund timeout.
+// === REKLAMA INTERSTITIAL CO 5 POZIOMÓW ===
 function showInterstitialAd() {
-    show_9373277({ 
-      type: 'inApp', 
-      inAppSettings: { 
-        frequency: 1, 
-        capping: 0,  // 0.1 godziny = 6 minut
-        interval: 120, 
-        timeout: 1, 
-        everyPage: false 
-      } 
-    }).then(() => {
-      console.log("Interstitial ad displayed successfully.");
-    }).catch(() => {
-      console.log("Failed to display interstitial ad.");
+    return show_9373277({
+        type: 'inApp',
+        inAppSettings: {
+            frequency: 1,
+            capping: 0,
+            interval: 120,
+            timeout: 1,
+            everyPage: false
+        }
     });
 }
 
+// === Narzędzie pomocnicze ===
 function shuffleArray(array) {
     for (let i = array.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
@@ -531,6 +250,7 @@ function shuffleArray(array) {
     return array;
 }
 
+// Start
 if (currentQuestion > 0) {
     alert(`Wznawiasz grę od poziomu ${currentQuestion + 1}`);
     loadQuestion();
