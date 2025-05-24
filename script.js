@@ -232,7 +232,7 @@ function showInterstitialAd() {
     return show_9373277({
         type: 'inApp',
         inAppSettings: {
-            frequency: 1,
+            frequency: 0,
             capping: 0,
             interval: 30,
             timeout: 0,
