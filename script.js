@@ -1,270 +1,539 @@
-// ======= script.js =======
-
-// ---- Telegram WebApp init ----
 const tg = window.Telegram.WebApp;
 tg.expand();
 
-// ---- KONFIGURACJA Google Sheets ----
-const G_SHEETS_URL =
-  "https://script.google.com/macros/s/AKfycbzDoaaL9n09D9vS1lUmc1EJsYFhFhOgO3PyusYjLyW4aXhkAfGm4Au-nJdJnARka216/exec";  // <-- Twój Web App URL
-
-// ---- Funkcja wysyłki do arkusza ----
-function sendUserData(level) {
-  const data = new URLSearchParams();
-  data.append("username", username);
-  data.append("level", level);
-  fetch(G_SHEETS_URL, {
-    method: "POST",
-    mode: "no-cors",
-    body: data
-  })
-  .then(() => console.log("✅ Wysłano do Sheets:", username, level))
-  .catch(e => console.error("❌ Błąd wysyłki:", e));
-}
-
-// ---- Pobieramy zapisane dane, jeśli istnieją ----
+// Pobieramy zapisane dane użytkownika, jeśli istnieją
 let currentQuestion = parseInt(localStorage.getItem('currentQuestion')) || 0;
-let score           = parseInt(localStorage.getItem('score'))           || 0;
-let username        = localStorage.getItem('username')                 || "";
+let score = parseInt(localStorage.getItem('score')) || 0;
+let username = localStorage.getItem('username') || "";
+let questionCounter = currentQuestion;
 
-// ---- Elementy DOM ----
-const answersContainer  = document.getElementById("answers");
-const restartButton     = document.getElementById("restart-btn");
-const scoreElement      = document.getElementById("score");
-const usernameInputEl   = document.getElementById("username-input");
-const setUsernameBtn    = document.getElementById("set-username-btn");
-const usernameDisplay   = document.getElementById("username-display");
+const answersContainer = document.getElementById("answers");
+const restartButton = document.getElementById("restart-btn");
+const scoreElement = document.getElementById("score");
+const usernameDisplay = document.getElementById("username-display");
 const usernameContainer = document.getElementById("username-container");
 
-// ---- Wzory liter 5x5 dla nazwy użytkownika ----
+// Mapping liter oraz cyfr na wzory 5x5 – używamy gwiazdek (*) jako "włączonych" kropek
 const letterPatterns = {
-  "A":["  *  "," * * ","*****","*   *","*   *"],
-  "B":["**** ","*   *","**** ","*   *","**** "],
-  "C":[" ****","*    ","*    ","*    "," ****"],
-  "D":["**** ","*   *","*   *","*   *","**** "],
-  "E":["*****","*    ","***  ","*    ","*****"],
-  "F":["*****","*    ","***  ","*    ","*    "],
-  "G":[" ****","*    ","*  **","*   *"," ****"],
-  "H":["*   *","*   *","*****","*   *","*   *"],
-  "I":[" *** ","  *  ","  *  ","  *  "," *** "],
-  "J":["  ***","   * ","   * ","*  * "," **  "],
-  "K":["*   *","*  * ","***  ","*  * ","*   *"],
-  "L":["*    ","*    ","*    ","*    ","*****"],
-  "M":["*   *","** **","* * *","*   *","*   *"],
-  "N":["*   *","**  *","* * *","*  **","*   *"],
-  "O":[" *** ","*   *","*   *","*   *"," *** "],
-  "P":["**** ","*   *","**** ","*    ","*    "],
-  "Q":[" *** ","*   *","*   *","*  **"," ****"],
-  "R":["**** ","*   *","**** ","*  * ","*   *"],
-  "S":[" ****","*    "," *** ","    *","**** "],
-  "T":["*****","  *  ","  *  ","  *  ","  *  "],
-  "U":["*   *","*   *","*   *","*   *"," *** "],
-  "V":["*   *","*   *","*   *"," * * ","  *  "],
-  "W":["*   *","*   *","* * *","** **","*   *"],
-  "X":["*   *"," * * ","  *  "," * * ","*   *"],
-  "Y":["*   *"," * * ","  *  ","  *  ","  *  "],
-  "Z":["*****","   * ","  *  "," *   ","*****"],
-  "0":[" *** ","*   *","*   *","*   *"," *** "],
-  "1":["  *  "," **  ","  *  ","  *  "," *** "],
-  "2":[" *** ","*   *","   * ","  *  ","*****"],
-  "3":[" *** ","    *"," *** ","    *"," *** "],
-  "4":["*   *","*   *","*****","    *","    *"],
-  "5":["*****","*    ","**** ","    *","**** "],
-  "6":[" *** ","*    ","**** ","*   *"," *** "],
-  "7":["*****","    *","   * ","  *  "," *   "],
-  "8":[" *** ","*   *"," *** ","*   *"," *** "],
-  "9":[" *** ","*   *"," ****","    *"," *** "]
+  "A": [
+    "  *  ",
+    " * * ",
+    "*****",
+    "*   *",
+    "*   *"
+  ],
+  "B": [
+    "**** ",
+    "*   *",
+    "**** ",
+    "*   *",
+    "**** "
+  ],
+  "C": [
+    " ****",
+    "*    ",
+    "*    ",
+    "*    ",
+    " ****"
+  ],
+  "D": [
+    "**** ",
+    "*   *",
+    "*   *",
+    "*   *",
+    "**** "
+  ],
+  "E": [
+    "*****",
+    "*    ",
+    "***  ",
+    "*    ",
+    "*****"
+  ],
+  "F": [
+    "*****",
+    "*    ",
+    "***  ",
+    "*    ",
+    "*    "
+  ],
+  "G": [
+    " ****",
+    "*    ",
+    "*  **",
+    "*   *",
+    " ****"
+  ],
+  "H": [
+    "*   *",
+    "*   *",
+    "*****",
+    "*   *",
+    "*   *"
+  ],
+  "I": [
+    " *** ",
+    "  *  ",
+    "  *  ",
+    "  *  ",
+    " *** "
+  ],
+  "J": [
+    "  ***",
+    "   * ",
+    "   * ",
+    "*  * ",
+    " **  "
+  ],
+  "K": [
+    "*   *",
+    "*  * ",
+    "***  ",
+    "*  * ",
+    "*   *"
+  ],
+  "L": [
+    "*    ",
+    "*    ",
+    "*    ",
+    "*    ",
+    "*****"
+  ],
+  "M": [
+    "*   *",
+    "** **",
+    "* * *",
+    "*   *",
+    "*   *"
+  ],
+  "N": [
+    "*   *",
+    "**  *",
+    "* * *",
+    "*  **",
+    "*   *"
+  ],
+  "O": [
+    " *** ",
+    "*   *",
+    "*   *",
+    "*   *",
+    " *** "
+  ],
+  "P": [
+    "**** ",
+    "*   *",
+    "**** ",
+    "*    ",
+    "*    "
+  ],
+  "Q": [
+    " *** ",
+    "*   *",
+    "*   *",
+    "*  **",
+    " ****"
+  ],
+  "R": [
+    "**** ",
+    "*   *",
+    "**** ",
+    "*  * ",
+    "*   *"
+  ],
+  "S": [
+    " ****",
+    "*    ",
+    " *** ",
+    "    *",
+    "**** "
+  ],
+  "T": [
+    "*****",
+    "  *  ",
+    "  *  ",
+    "  *  ",
+    "  *  "
+  ],
+  "U": [
+    "*   *",
+    "*   *",
+    "*   *",
+    "*   *",
+    " *** "
+  ],
+  "V": [
+    "*   *",
+    "*   *",
+    "*   *",
+    " * * ",
+    "  *  "
+  ],
+  "W": [
+    "*   *",
+    "*   *",
+    "* * *",
+    "** **",
+    "*   *"
+  ],
+  "X": [
+    "*   *",
+    " * * ",
+    "  *  ",
+    " * * ",
+    "*   *"
+  ],
+  "Y": [
+    "*   *",
+    " * * ",
+    "  *  ",
+    "  *  ",
+    "  *  "
+  ],
+  "Z": [
+    "*****",
+    "   * ",
+    "  *  ",
+    " *   ",
+    "*****"
+  ],
+  // Dodajemy wzory dla cyfr:
+  "0": [
+    " *** ",
+    "*   *",
+    "*   *",
+    "*   *",
+    " *** "
+  ],
+  "1": [
+    "  *  ",
+    " **  ",
+    "  *  ",
+    "  *  ",
+    " *** "
+  ],
+  "2": [
+    " *** ",
+    "*   *",
+    "   * ",
+    "  *  ",
+    "*****"
+  ],
+  "3": [
+    " *** ",
+    "    *",
+    " *** ",
+    "    *",
+    " *** "
+  ],
+  "4": [
+    "*   *",
+    "*   *",
+    "*****",
+    "    *",
+    "    *"
+  ],
+  "5": [
+    "*****",
+    "*    ",
+    "**** ",
+    "    *",
+    "**** "
+  ],
+  "6": [
+    " *** ",
+    "*    ",
+    "**** ",
+    "*   *",
+    " *** "
+  ],
+  "7": [
+    "*****",
+    "    *",
+    "   * ",
+    "  *  ",
+    " *   "
+  ],
+  "8": [
+    " *** ",
+    "*   *",
+    " *** ",
+    "*   *",
+    " *** "
+  ],
+  "9": [
+    " *** ",
+    "*   *",
+    " ****",
+    "    *",
+    " *** "
+  ]
 };
 
-// ---- Ustawianie nazwy użytkownika ----
-setUsernameBtn.addEventListener("click", () => {
-  const v = usernameInputEl.value.trim();
-  if (!v) return;
-  username = v;
-  localStorage.setItem('username', username);
-  updateUsernameDisplay();
-  usernameContainer.style.display = "none";
-});
+// Funkcja ustawiająca nazwę użytkownika
+function setUsername() {
+    username = document.getElementById("username-input").value.trim();
+    if (username) {
+        localStorage.setItem('username', username);
+        updateUsernameDisplay();
+        // Ukrywamy kontener ustawiania nazwy
+        usernameContainer.style.display = "none";
+    }
+}
+
+// Aktualizacja widoku nazwy użytkownika – rysowanie liter z kropek i skalowanie, jeśli trzeba
 function updateUsernameDisplay() {
-  usernameDisplay.innerHTML = "";
-  const name = username.toUpperCase();
-  for (let char of name) {
-    const pattern = letterPatterns[char];
-    if (!pattern) continue;
-    const letterDiv = document.createElement("div");
-    letterDiv.classList.add("letter-container");
-    for (let row of pattern) {
-      const rowDiv = document.createElement("div");
-      rowDiv.classList.add("letter-row");
-      for (let c of row) {
-        const dot = document.createElement("div");
-        dot.classList.add(c === "*" ? "letter-dot" : "empty-letter");
-        rowDiv.appendChild(dot);
-      }
-      letterDiv.appendChild(rowDiv);
+    // Czyścimy poprzednią zawartość
+    usernameDisplay.innerHTML = "";
+
+    // Tworzymy kropkowe litery
+    const name = username.toUpperCase();
+    for (let char of name) {
+        const pattern = letterPatterns[char];
+        if (!pattern) continue;  // pomijamy nieobsługiwane znaki
+        const letterContainer = document.createElement("div");
+        letterContainer.classList.add("letter-container");
+
+        for (let row of pattern) {
+            const rowDiv = document.createElement("div");
+            rowDiv.classList.add("letter-row");
+            for (let ch of row) {
+                if (ch === "*") {
+                    const dot = document.createElement("div");
+                    dot.classList.add("letter-dot");
+                    rowDiv.appendChild(dot);
+                } else {
+                    const empty = document.createElement("div");
+                    empty.classList.add("empty-letter");
+                    rowDiv.appendChild(empty);
+                }
+            }
+            letterContainer.appendChild(rowDiv);
+        }
+        usernameDisplay.appendChild(letterContainer);
     }
-    usernameDisplay.appendChild(letterDiv);
-  }
-  // Skalowanie jeśli za szeroko
-  usernameDisplay.style.transform = "";
-  const avail = usernameDisplay.parentElement.clientWidth;
-  const content = usernameDisplay.scrollWidth;
-  if (content > avail) {
-    const scale = avail / content;
-    usernameDisplay.style.transform = `scale(${scale})`;
-    usernameDisplay.style.transformOrigin = "center";
-  }
-}
-if (username) {
-  updateUsernameDisplay();
-  usernameContainer.style.display = "none";
+
+    // ---- AUTOMATYCZNE SKALOWANIE ----
+
+    // Na początek resetujemy ewentualne poprzednie skalowanie:
+    usernameDisplay.style.transform = "";
+
+    // Szerokość dostępna to szerokość rodzica (np. #app)
+    const availableWidth = usernameDisplay.parentElement.clientWidth;
+    
+    // Rzeczywista szerokość naszego "napisu" z kropek:
+    const contentWidth = usernameDisplay.scrollWidth;
+
+    // Jeśli zawartość jest szersza niż dostępna przestrzeń, skalujemy
+    if (contentWidth > availableWidth) {
+        const scale = availableWidth / contentWidth;
+        usernameDisplay.style.transform = scale(${scale});
+        // Ustawiamy punkt odniesienia skali na środek
+        usernameDisplay.style.transformOrigin = "center";
+    }
 }
 
-// ---- Dane quizu ----
+// Jeżeli nazwa już istnieje – od razu wyświetlamy ją i ukrywamy kontener ustawiania nazwy
+if (username) {
+    updateUsernameDisplay();
+    usernameContainer.style.display = "none";
+}
+
+// Reszta kodu gry (quiz, reklamy itd.) pozostaje bez zmian
+
+function startQuiz() {
+    currentQuestion = 0;
+    score = 0;
+    questionCounter = 0;
+    localStorage.setItem('currentQuestion', 0);
+    localStorage.setItem('score', 0);
+    restartButton.style.display = "none";
+    loadQuestion();
+}
+
+function loadQuestion() {
+    answersContainer.innerHTML = "";
+    const { totalDots, redDots } = quizData[currentQuestion];
+    generateDots(totalDots, redDots);
+    scoreElement.textContent = Wynik: ${score}/1000;
+}
+
 const quizData = Array.from({ length: 1000 }, (_, i) => {
-  const total = Math.min(30 + i * 2, 200);
-  const red   = Math.floor(total * (0.2 + Math.random() * 0.7));
-  return { totalDots: total, redDots: red };
+    const totalDots = Math.min(30 + i * 2, 200);
+    const redDots = Math.floor(totalDots * (0.2 + Math.random() * 0.7));
+    return { totalDots, redDots };
 });
 
-// ---- Start i ładowanie ----
-function startQuiz() {
-  currentQuestion = 0;
-  score = 0;
-  localStorage.setItem('currentQuestion', 0);
-  localStorage.setItem('score', 0);
-  restartButton.style.display = "none";
-  loadQuestion();
-}
-function loadQuestion() {
-  answersContainer.innerHTML = "";
-  const { totalDots, redDots } = quizData[currentQuestion];
-  generateDots(totalDots, redDots);
-  scoreElement.textContent = `Wynik: ${score}/1000`;
-}
-
-// ---- Generowanie kropek i opcji ----
-function generateDots(total, redCount) {
-  const dots = [];
-  let red = 0, black = 0;
-  for (let i = 0; i < total; i++) {
-    const dot = document.createElement("div");
-    dot.classList.add("dot");
-    if ((black + 1) % 3 === 0 && red < redCount) {
-      dot.classList.add("red");
-      red++;
-    } else {
-      black++;
+function generateDots(totalDots, redDots) {
+    answersContainer.innerHTML = "";
+    const dots = [];
+    let redCount = 0;
+    let blackCount = 0;
+    for (let i = 0; i < totalDots; i++) {
+        const dot = document.createElement("div");
+        dot.classList.add("dot");
+        if ((blackCount + 1) % 3 === 0 && redCount < redDots) {
+            dot.classList.add("red");
+            redCount++;
+        } else {
+            blackCount++;
+        }
+        dots.push(dot);
     }
-    dots.push(dot);
-  }
-  shuffleArray(dots).forEach(d => answersContainer.appendChild(d));
-  const options = generateOptions(redCount, currentQuestion);
-  options.forEach(opt => {
-    const btn = document.createElement("button");
-    btn.textContent = opt;
-    btn.addEventListener("click", () => checkAnswer(opt));
-    answersContainer.appendChild(btn);
-  });
-  if (currentQuestion % 5 === 0 && currentQuestion !== 0) {
-    const skip = document.createElement("button");
-    skip.textContent = "Pomiń poziom (Reklama)";
-    skip.addEventListener("click", showRewardAdSkip);
-    answersContainer.appendChild(skip);
-  }
-}
-function generateOptions(correct, idx) {
-  const range = Math.max(3, Math.floor(4 + idx * 0.4));
-  const opts = new Set([correct]);
-  while (opts.size < 4) {
-    const offset = Math.floor(Math.random() * range) - Math.floor(range / 2);
-    const val = correct + offset;
-    if (val > 0 && val !== correct) opts.add(val);
-  }
-  return shuffleArray([...opts]);
-}
-
-// ---- Sprawdzenie odpowiedzi ----
-function checkAnswer(selected) {
-  const { redDots } = quizData[currentQuestion];
-  if (selected === redDots) {
-    score++; currentQuestion++;
-    localStorage.setItem('score', score);
-    localStorage.setItem('currentQuestion', currentQuestion);
-    if (currentQuestion % 10 === 0) showExtraRewardAd();
-    if (currentQuestion === 1000) {
-      showFinalMessage();
-    } else {
-      if (currentQuestion % 5 === 0) showInterstitialAd();
-      loadQuestion();
+    shuffleArray(dots);
+    dots.forEach(dot => answersContainer.appendChild(dot));
+    const options = generateOptions(redDots);
+    options.forEach(option => {
+        const button = document.createElement("button");
+        button.textContent = option;
+        button.addEventListener("click", () => checkAnswer(option));
+        answersContainer.appendChild(button);
+    });
+    if (currentQuestion % 5 === 0 && currentQuestion !== 0) {
+        const skipButton = document.createElement("button");
+        skipButton.textContent = "Pomiń poziom (Reklama)";
+        skipButton.addEventListener("click", showSkipRewardAdOption);
+        answersContainer.appendChild(skipButton);
     }
-  } else {
-    showRewardAdOption();
-  }
 }
 
-// ---- Końcowy komunikat i wysyłka ----
+function generateOptions(correctAnswer) {
+    const range = Math.max(3, Math.floor(4 + currentQuestion * 0.4));
+    const options = new Set([correctAnswer]);
+    while (options.size < 4) {
+        let randomOffset = Math.floor(Math.random() * range) - Math.floor(range / 2);
+        let newOption = correctAnswer + randomOffset;
+        if (newOption > 0 && newOption !== correctAnswer) {
+            options.add(newOption);
+        }
+    }
+    return shuffleArray(Array.from(options));
+}
+
+function checkAnswer(selectedAnswer) {
+    if (selectedAnswer === quizData[currentQuestion].redDots) {
+        score++;
+        currentQuestion++;
+        questionCounter++;
+        localStorage.setItem('currentQuestion', currentQuestion);
+        localStorage.setItem('score', score);
+        if (questionCounter % 10 === 0) {
+            showExtraRewardAd();
+        }
+        if (currentQuestion === 1000) {
+            showFinalMessage();
+        } else {
+            // Wyświetl reklamę interstitial tylko co 5 poziom (poza zerowym)
+            if (currentQuestion % 5 === 0 && currentQuestion !== 0) {
+                showInterstitialAd();
+            }
+            loadQuestion();
+        }
+    } else {
+        showRewardAdOption();
+    }
+}
+
 function showFinalMessage() {
-  answersContainer.innerHTML = `<h2>Gratulacje Wariacie 420!</h2>`;
-  restartButton.style.display = "block";
-  tg.sendData(JSON.stringify({ score }));
-  localStorage.removeItem('currentQuestion');
-  localStorage.removeItem('score');
-  sendUserData(currentQuestion);
+    answersContainer.innerHTML = <h2>Gratulacje Wariacie 420!</h2>;
+    restartButton.style.display = "block";
+    tg.sendData(JSON.stringify({ score: score }));
+    localStorage.removeItem('currentQuestion');
+    localStorage.removeItem('score');
 }
 
-// ---- Reklamy i pomocnicze ----
 function showRewardAdOption() {
-  answersContainer.innerHTML = `
-    <p>Źle! Chcesz obejrzeć reklamę, aby zachować postęp?</p>
-    <button id="yes-ad">Tak</button>
-    <button id="no-ad">Nie</button>`;
-  document.getElementById("yes-ad").addEventListener("click", showRewardAd);
-  document.getElementById("no-ad").addEventListener("click", startQuiz);
-}
-function showRewardAd() {
-  show_9373277().then(loadQuestion).catch(startQuiz);
-}
-function showExtraRewardAd() {
-  show_9373277().then(() => {
-    score++;
-    localStorage.setItem('score', score);
-  }).catch(()=>{});
-}
-function showRewardAdSkip() {
-  show_9373277()
-    .then(() => {
-      currentQuestion++;
-      localStorage.setItem('currentQuestion', currentQuestion);
-      loadQuestion();
-    })
-    .catch(loadQuestion);
-}
-function showInterstitialAd() {
-  show_9373277({
-    type: 'inApp',
-    inAppSettings: { frequency:1, capping:0, interval:180, timeout:1, everyPage:false }
-  });
-}
-function shuffleArray(a) {
-  for (let i = a.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [a[i], a[j]] = [a[j], a[i]];
-  }
-  return a;
+    answersContainer.innerHTML = "";
+    const message = document.createElement("p");
+    message.innerHTML = "Źle! Chcesz obejrzeć reklamę, aby zachować postęp?";
+    const yesButton = document.createElement("button");
+    yesButton.textContent = "Tak, obejrzyj reklamę";
+    yesButton.addEventListener("click", showRewardAd);
+    const noButton = document.createElement("button");
+    noButton.textContent = "Nie, utracisz postęp";
+    noButton.addEventListener("click", startQuiz);
+    answersContainer.appendChild(message);
+    answersContainer.appendChild(yesButton);
+    answersContainer.appendChild(noButton);
 }
 
-// ---- Inicjalizacja ----
-if (username) {
-  usernameContainer.style.display = "none";
-  updateUsernameDisplay();
-} else {
-  usernameContainer.style.display = "block";
+function showRewardAd() {
+    show_9373277().then(() => {
+        alert('You have seen a rewarded ad!');
+        loadQuestion();
+    }).catch(() => {
+        alert("Nie udało się załadować reklamy – zaczynasz od nowa.");
+        startQuiz();
+    });
 }
-restartButton.addEventListener("click", startQuiz);
+
+function showExtraRewardAd() {
+    show_9373277().then(() => {
+        alert('Bonus! You have seen an extra rewarded ad and earned a bonus point!');
+        score++;
+        localStorage.setItem('score', score);
+    }).catch(() => {
+        alert("Nie udało się załadować bonusowej reklamy.");
+    });
+}
+
+function showSkipRewardAdOption() {
+    answersContainer.innerHTML = "";
+    const message = document.createElement("p");
+    message.innerHTML = "Czy chcesz obejrzeć reklamę, aby pominąć poziom?";
+    const yesButton = document.createElement("button");
+    yesButton.textContent = "Tak, obejrzyj reklamę";
+    yesButton.addEventListener("click", showRewardAdSkip);
+    const noButton = document.createElement("button");
+    noButton.textContent = "Nie, pozostań na poziomie";
+    noButton.addEventListener("click", loadQuestion);
+    answersContainer.appendChild(message);
+    answersContainer.appendChild(yesButton);
+    answersContainer.appendChild(noButton);
+}
+
+function showRewardAdSkip() {
+    show_9373277().then(() => {
+        alert("You have seen a rewarded ad. Level skipped!");
+        currentQuestion++;
+        localStorage.setItem('currentQuestion', currentQuestion);
+        loadQuestion();
+    }).catch(() => {
+        alert("Nie udało się załadować reklamy.");
+        loadQuestion();
+    });
+}
+
+// Nowa funkcja do wyświetlania reklam interstitial (In-App Interstitial)
+// Reklama wyświetla się z ustawieniami: 2 reklamy w ciągu 6 minut, 30-sekundowy interwał, 5 sekund timeout.
+function showInterstitialAd() {
+    show_9373277({ 
+      type: 'inApp', 
+      inAppSettings: { 
+        frequency: 1, 
+        capping: 0,  // 0.1 godziny = 6 minut
+        interval: 180, 
+        timeout: 1, 
+        everyPage: false 
+      } 
+    }).then(() => {
+      console.log("Interstitial ad displayed successfully.");
+    }).catch(() => {
+      console.log("Failed to display interstitial ad.");
+    });
+}
+
+function shuffleArray(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+    }
+    return array;
+}
 
 if (currentQuestion > 0) {
-  loadQuestion();
+    alert(Wznawiasz grę od poziomu ${currentQuestion + 1});
+    loadQuestion();
 } else {
-  startQuiz();
+    startQuiz();
 }
