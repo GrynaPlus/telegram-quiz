@@ -227,7 +227,7 @@ function showRewardAdSkip() {
     });
 }
 
-// === REKLAMA INTERSTITIAL PO KAŻDYCH 5 POZIOMACH ===
+// === REKLAMA INTERSTITIAL CO 5 POZIOMÓW ===
 function showInterstitialAd() {
     return show_9373277({
         type: 'inApp',
