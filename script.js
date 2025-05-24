@@ -5,7 +5,7 @@ const tg = window.Telegram.WebApp;
 tg.expand();
 
 // ---- KONFIGURACJA Google Sheets ----
-const G_SHEETS_URL = 
+const G_SHEETS_URL =
   "https://script.google.com/macros/s/AKfycbxE60jxB3bsW5DmFsMGEMYkdsArMAxpNN765lozK8xuEgNS591Pl44IE_zcEZeWgvaV/exec";  // <-- Twój Web App URL
 
 // ---- Funkcja wysyłki do arkusza ----
@@ -22,7 +22,7 @@ function sendUserData(level) {
   .catch(e => console.error("❌ Błąd wysyłki:", e));
 }
 
-// ---- Pobieramy zapisane dane użytkownika, jeśli istnieją ----
+// ---- Pobieramy zapisane dane, jeśli istnieją ----
 let currentQuestion = parseInt(localStorage.getItem('currentQuestion')) || 0;
 let score           = parseInt(localStorage.getItem('score'))           || 0;
 let username        = localStorage.getItem('username')                 || "";
@@ -38,10 +38,41 @@ const usernameContainer = document.getElementById("username-container");
 
 // ---- Wzory liter 5x5 dla nazwy użytkownika ----
 const letterPatterns = {
-  /* A–Z oraz 0–9 wzory jak w Twoim kodzie… */
-  // np.:
   "A":["  *  "," * * ","*****","*   *","*   *"],
-  /* … */
+  "B":["**** ","*   *","**** ","*   *","**** "],
+  "C":[" ****","*    ","*    ","*    "," ****"],
+  "D":["**** ","*   *","*   *","*   *","**** "],
+  "E":["*****","*    ","***  ","*    ","*****"],
+  "F":["*****","*    ","***  ","*    ","*    "],
+  "G":[" ****","*    ","*  **","*   *"," ****"],
+  "H":["*   *","*   *","*****","*   *","*   *"],
+  "I":[" *** ","  *  ","  *  ","  *  "," *** "],
+  "J":["  ***","   * ","   * ","*  * "," **  "],
+  "K":["*   *","*  * ","***  ","*  * ","*   *"],
+  "L":["*    ","*    ","*    ","*    ","*****"],
+  "M":["*   *","** **","* * *","*   *","*   *"],
+  "N":["*   *","**  *","* * *","*  **","*   *"],
+  "O":[" *** ","*   *","*   *","*   *"," *** "],
+  "P":["**** ","*   *","**** ","*    ","*    "],
+  "Q":[" *** ","*   *","*   *","*  **"," ****"],
+  "R":["**** ","*   *","**** ","*  * ","*   *"],
+  "S":[" ****","*    "," *** ","    *","**** "],
+  "T":["*****","  *  ","  *  ","  *  ","  *  "],
+  "U":["*   *","*   *","*   *","*   *"," *** "],
+  "V":["*   *","*   *","*   *"," * * ","  *  "],
+  "W":["*   *","*   *","* * *","** **","*   *"],
+  "X":["*   *"," * * ","  *  "," * * ","*   *"],
+  "Y":["*   *"," * * ","  *  ","  *  ","  *  "],
+  "Z":["*****","   * ","  *  "," *   ","*****"],
+  "0":[" *** ","*   *","*   *","*   *"," *** "],
+  "1":["  *  "," **  ","  *  ","  *  "," *** "],
+  "2":[" *** ","*   *","   * ","  *  ","*****"],
+  "3":[" *** ","    *"," *** ","    *"," *** "],
+  "4":["*   *","*   *","*****","    *","    *"],
+  "5":["*****","*    ","**** ","    *","**** "],
+  "6":[" *** ","*    ","**** ","*   *"," *** "],
+  "7":["*****","    *","   * ","  *  "," *   "],
+  "8":[" *** ","*   *"," *** ","*   *"," *** "],
   "9":[" *** ","*   *"," ****","    *"," *** "]
 };
 
@@ -74,7 +105,7 @@ function updateUsernameDisplay() {
     }
     usernameDisplay.appendChild(letterDiv);
   }
-  // skalowanie, jeśli za szeroko:
+  // Skalowanie jeśli za szeroko
   usernameDisplay.style.transform = "";
   const avail = usernameDisplay.parentElement.clientWidth;
   const content = usernameDisplay.scrollWidth;
@@ -89,14 +120,14 @@ if (username) {
   usernameContainer.style.display = "none";
 }
 
-// ---- Dane quizu: ilość kropek i czerwonych kropek ----
+// ---- Dane quizu ----
 const quizData = Array.from({ length: 1000 }, (_, i) => {
   const total = Math.min(30 + i * 2, 200);
   const red   = Math.floor(total * (0.2 + Math.random() * 0.7));
   return { totalDots: total, redDots: red };
 });
 
-// ---- Start i ładowanie pytań ----
+// ---- Start i ładowanie ----
 function startQuiz() {
   currentQuestion = 0;
   score = 0;
@@ -112,7 +143,7 @@ function loadQuestion() {
   scoreElement.textContent = `Wynik: ${score}/1000`;
 }
 
-// ---- Generowanie kropek i przycisków z odpowiedziami ----
+// ---- Generowanie kropek i opcji ----
 function generateDots(total, redCount) {
   const dots = [];
   let red = 0, black = 0;
@@ -146,7 +177,7 @@ function generateOptions(correct, idx) {
   const range = Math.max(3, Math.floor(4 + idx * 0.4));
   const opts = new Set([correct]);
   while (opts.size < 4) {
-    const offset = Math.floor(Math.random()*range) - Math.floor(range/2);
+    const offset = Math.floor(Math.random() * range) - Math.floor(range / 2);
     const val = correct + offset;
     if (val > 0 && val !== correct) opts.add(val);
   }
@@ -172,16 +203,17 @@ function checkAnswer(selected) {
   }
 }
 
-// ---- Końcowe komunikaty i reklamy ----
+// ---- Końcowy komunikat i wysyłka ----
 function showFinalMessage() {
   answersContainer.innerHTML = `<h2>Gratulacje Wariacie 420!</h2>`;
   restartButton.style.display = "block";
   tg.sendData(JSON.stringify({ score }));
   localStorage.removeItem('currentQuestion');
   localStorage.removeItem('score');
-  // *** WYSYŁKA DO SHEETS ***
   sendUserData(currentQuestion);
 }
+
+// ---- Reklamy i pomocnicze ----
 function showRewardAdOption() {
   answersContainer.innerHTML = `
     <p>Źle! Chcesz obejrzeć reklamę, aby zachować postęp?</p>
@@ -191,19 +223,22 @@ function showRewardAdOption() {
   document.getElementById("no-ad").addEventListener("click", startQuiz);
 }
 function showRewardAd() {
-  show_9373277()
-    .then(() => loadQuestion())
-    .catch(() => startQuiz());
+  show_9373277().then(loadQuestion).catch(startQuiz);
 }
 function showExtraRewardAd() {
-  show_9373277()
-    .then(() => { score++; localStorage.setItem('score', score); })
-    .catch(()=>{});
+  show_9373277().then(() => {
+    score++;
+    localStorage.setItem('score', score);
+  }).catch(()=>{});
 }
 function showRewardAdSkip() {
   show_9373277()
-    .then(() => { currentQuestion++; localStorage.setItem('currentQuestion', currentQuestion); loadQuestion(); })
-    .catch(() => loadQuestion());
+    .then(() => {
+      currentQuestion++;
+      localStorage.setItem('currentQuestion', currentQuestion);
+      loadQuestion();
+    })
+    .catch(loadQuestion);
 }
 function showInterstitialAd() {
   show_9373277({
@@ -211,22 +246,20 @@ function showInterstitialAd() {
     inAppSettings: { frequency:1, capping:0, interval:180, timeout:1, everyPage:false }
   });
 }
-
-// ---- Pomocnicze ----
 function shuffleArray(a) {
-  for (let i = a.length-1; i>0; i--) {
-    const j = Math.floor(Math.random()*(i+1));
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
     [a[i], a[j]] = [a[j], a[i]];
   }
   return a;
 }
 
 // ---- Inicjalizacja ----
-if (username === "") {
-  usernameContainer.style.display = "block";
-} else {
+if (username) {
   usernameContainer.style.display = "none";
   updateUsernameDisplay();
+} else {
+  usernameContainer.style.display = "block";
 }
 restartButton.addEventListener("click", startQuiz);
 
