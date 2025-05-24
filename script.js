@@ -6,7 +6,7 @@ tg.expand();
 
 // ---- KONFIGURACJA Google Sheets ----
 const G_SHEETS_URL =
-  "https://script.google.com/macros/s/AKfycbx9-0X_sYVTQuLwAjOUwZhU6VGNT1PnmSK2FrcMRklt8FVwA5a_ijipv-TPqLEpLHHC/exec";  // <-- Twój Web App URL
+  "https://script.google.com/macros/s/AKfycbzDoaaL9n09D9vS1lUmc1EJsYFhFhOgO3PyusYjLyW4aXhkAfGm4Au-nJdJnARka216/exec";  // <-- Twój Web App URL
 
 // ---- Funkcja wysyłki do arkusza ----
 function sendUserData(level) {
@@ -111,7 +111,7 @@ function updateUsernameDisplay() {
   const content = usernameDisplay.scrollWidth;
   if (content > avail) {
     const scale = avail / content;
-    usernameDisplay.style.transform = scale(${scale});
+    usernameDisplay.style.transform = `scale(${scale})`;
     usernameDisplay.style.transformOrigin = "center";
   }
 }
@@ -140,7 +140,7 @@ function loadQuestion() {
   answersContainer.innerHTML = "";
   const { totalDots, redDots } = quizData[currentQuestion];
   generateDots(totalDots, redDots);
-  scoreElement.textContent = Wynik: ${score}/1000;
+  scoreElement.textContent = `Wynik: ${score}/1000`;
 }
 
 // ---- Generowanie kropek i opcji ----
@@ -205,7 +205,7 @@ function checkAnswer(selected) {
 
 // ---- Końcowy komunikat i wysyłka ----
 function showFinalMessage() {
-  answersContainer.innerHTML = <h2>Gratulacje Wariacie 420!</h2>;
+  answersContainer.innerHTML = `<h2>Gratulacje Wariacie 420!</h2>`;
   restartButton.style.display = "block";
   tg.sendData(JSON.stringify({ score }));
   localStorage.removeItem('currentQuestion');
@@ -215,10 +215,10 @@ function showFinalMessage() {
 
 // ---- Reklamy i pomocnicze ----
 function showRewardAdOption() {
-  answersContainer.innerHTML = 
+  answersContainer.innerHTML = `
     <p>Źle! Chcesz obejrzeć reklamę, aby zachować postęp?</p>
     <button id="yes-ad">Tak</button>
-    <button id="no-ad">Nie</button>;
+    <button id="no-ad">Nie</button>`;
   document.getElementById("yes-ad").addEventListener("click", showRewardAd);
   document.getElementById("no-ad").addEventListener("click", startQuiz);
 }
