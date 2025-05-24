@@ -234,7 +234,7 @@ function showInterstitialAd() {
         inAppSettings: {
             frequency: 0,
             capping: 0,
-            interval: 30,
+            interval: 180,
             timeout: 0,
             everyPage: false
         }
