@@ -510,9 +510,9 @@ function showInterstitialAd() {
     show_9373277({ 
       type: 'inApp', 
       inAppSettings: { 
-        frequency: 0, 
+        frequency: 1, 
         capping: 0,  // 0.1 godziny = 6 minut
-        interval: 1, 
+        interval: 30, 
         timeout: 1, 
         everyPage: false 
       } 
